@@ -6,7 +6,7 @@ One Next.js app on Vercel serving four sites, picked by subdomain:
 | --- | --- | --- |
 | `3310.nz` | Front page styled like an old phone, with a ringtone/MP3 player, Snake and an optional SoundCloud/Spotify/YouTube embed. Also serves short links `3310.nz/s/<code>` and files `3310.nz/f/<id>`. | Everyone |
 | `portfolio.3310.nz` | Private gallery. Work is uploaded at `/manage`. | Portfolio password to view, manage password to upload |
-| `drop.3310.nz` | URL shortener + file host dashboard | Drop password |
+| `drop.3310.nz` | URL shortener + file host dashboard. Its link preview image is `public/drop-og.png`. | Drop password |
 | `old.3310.nz` | Neocities-style news & updates board. Log in at `/login` to post, edit and delete. | Public to read, admin to post |
 
 ## How the private parts stay private
@@ -53,7 +53,7 @@ Nothing can stop someone who *is* logged in from screenshotting an image. Disabl
 - **Music**: edit `site.config.ts`. Put MP3s in `public/music/` and add `{ title, artist, src: "/music/file.mp3" }`. To show an embed under the phone, paste a SoundCloud, Spotify or YouTube link into `embed`. Anything in `public/` is public, so only put music there.
 - **Portfolio**: go to `portfolio.3310.nz/manage` and log in with the manage password.
 - **News post**: go to `old.3310.nz/login`, then use "+ new post". Posts support `**bold**`, `*italic*`, `[link](https://…)`, `![img](https://…)`, `# heading`, `- list` and `> quote`.
-- **Short link / file**: go to `drop.3310.nz`. You can drag files anywhere on the page (500 MB max each). Each upload is either a permanent link or deleted after 24 hours, chosen on the Files tab. The bar at the top shows how much of the Blob store is left (1 GB on the Hobby plan; set `BLOB_QUOTA_GB` if that changes).
+- **Short link / file**: go to `drop.3310.nz`. You can drag files anywhere on the page (500 MB max each). Each upload is either a permanent link or deleted after 24 hours, chosen on the Files tab. The same tab has a **videos** switch: "compress to 480p 60fps" re-encodes videos in your browser (H.264 MP4, short side capped at 480 px, frame rate capped at 60) before they upload, which needs Chrome, Edge or another browser with WebCodecs. The bar at the top shows how much of the Blob store is left (1 GB on the Hobby plan; set `BLOB_QUOTA_GB` if that changes).
 
 ## Local development
 

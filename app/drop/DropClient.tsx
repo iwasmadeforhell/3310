@@ -3,8 +3,10 @@ import { useEffect, useRef, useState, type DragEvent, type FormEvent } from "rea
 import { upload } from "@vercel/blob/client";
 import type { DropFile, ShortLink } from "@/lib/drop";
 import { logout } from "@/components/useLogin";
+// lib/compress is only loaded when a video actually gets compressed.
+const isVideo = (f: File) => f.type.startsWith("video/") || /\.(mp4|m4v|mov|webm|mkv)$/i.test(f.name);
 
-type Pending = { key: string; name: string; pct: number; error?: string };
+type Pending = { key: string; name: string; pct: number; stage?: "waiting" | "compressing"; error?: string };
 
 const THUMB_TYPES = /^image\/(png|jpe?g|gif|webp|avif)$/;
 const THUMB_MAX = 8 * 1024 * 1024; // don't pull big images just for a preview
@@ -65,13 +67,16 @@ export default function DropClient({
   const [dragging, setDragging] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
   const [temp, setTemp] = useState(false); // true = new uploads auto-delete after 24 hours
+  const [shrink, setShrink] = useState(false); // true = videos are compressed to 480p 60fps before upload
   const [now, setNow] = useState(() => Date.now());
+  const compressQueue = useRef<Promise<unknown>>(Promise.resolve()); // one video at a time
   const fileInput = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setBase(window.location.origin.replace("//drop.", "//"));
     try {
       setTemp(localStorage.getItem("dr-expiry") === "24h");
+      setShrink(localStorage.getItem("dr-video") === "480p");
     } catch {}
     const tick = setInterval(() => setNow(Date.now()), 60_000);
     return () => clearInterval(tick);
@@ -81,6 +86,13 @@ export default function DropClient({
     setTemp(t);
     try {
       localStorage.setItem("dr-expiry", t ? "24h" : "never");
+    } catch {}
+  }
+
+  function chooseVideo(s: boolean) {
+    setShrink(s);
+    try {
+      localStorage.setItem("dr-video", s ? "480p" : "original");
     } catch {}
   }
 
@@ -132,14 +144,26 @@ export default function DropClient({
     const expires = temp ? "24h" : "never";
     let room = left;
     await Promise.all(
-      arr.map(async (file) => {
+      arr.map(async (original) => {
+        let file = original;
         const key = `${file.name}-${file.size}-${Math.random()}`;
         setPending((p) => [...p, { key, name: file.name, pct: 0 }]);
         const set = (patch: Partial<Pending>) =>
           setPending((p) => p.map((x) => (x.key === key ? { ...x, ...patch } : x)));
-        if (file.size > room) return set({ error: `Not enough storage left (${bytes(left)} free)` });
-        room -= file.size;
         try {
+          if (shrink && isVideo(file)) {
+            set({ stage: "waiting" });
+            const job = compressQueue.current.then(async () => {
+              set({ stage: "compressing" });
+              const { compressVideo } = await import("@/lib/compress");
+              return compressVideo(original, (pct) => set({ pct }));
+            });
+            compressQueue.current = job.catch(() => {});
+            file = await job;
+            set({ stage: undefined, pct: 0, name: file.name });
+          }
+          if (file.size > room) return set({ error: `Not enough storage left (${bytes(left)} free)` });
+          room -= file.size;
           const blob = await upload(`drop/${safeName(file.name)}`, file, {
             access: "private",
             handleUploadUrl: "/api/drop/upload",
@@ -321,6 +345,15 @@ export default function DropClient({
               delete after 24 hours
             </button>
           </div>
+          <div className="dr-expiry" role="radiogroup" aria-label="How to upload videos">
+            <span>videos:</span>
+            <button type="button" role="radio" aria-checked={!shrink} className={!shrink ? "on" : ""} onClick={() => chooseVideo(false)}>
+              keep original
+            </button>
+            <button type="button" role="radio" aria-checked={shrink} className={shrink ? "on" : ""} onClick={() => chooseVideo(true)}>
+              compress to 480p 60fps
+            </button>
+          </div>
 
           <ul className="dr-list">
             {pending.map((p) => (
@@ -340,7 +373,9 @@ export default function DropClient({
                       </button>
                     </>
                   ) : (
-                    <span>{Math.round(p.pct)}%</span>
+                    <span>
+                      {p.stage === "waiting" ? "waiting to compress" : `${p.stage ?? "uploading"} ${Math.round(p.pct)}%`}
+                    </span>
                   )}
                 </div>
               </li>
