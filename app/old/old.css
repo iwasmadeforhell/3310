@@ -1,0 +1,574 @@
+/* ───────────── old.3310.nz — neocities mode ───────────── */
+.old {
+  --panel: #fffbe9;
+  --ink: #2a1b3d;
+  --pink: #ff6ec7;
+  --cyan: #3ef0ff;
+  --lime: #9dff3e;
+  --purple: #6b2fbf;
+  --link: #0000ee;
+  min-height: 100vh;
+  padding: 20px 10px 40px;
+  color: var(--ink);
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+  /* tiled starfield */
+  background-color: #12062b;
+  background-image:
+    radial-gradient(1px 1px at 10px 14px, #fff 50%, transparent 51%),
+    radial-gradient(1px 1px at 52px 80px, #fff 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 90px 30px, #ffe68a 50%, transparent 51%),
+    radial-gradient(1px 1px at 130px 110px, #9cf 50%, transparent 51%),
+    radial-gradient(1px 1px at 30px 120px, #fff 50%, transparent 51%),
+    radial-gradient(2px 2px at 140px 60px, #fff 50%, transparent 51%),
+    linear-gradient(180deg, #12062b, #2a0f4d);
+  background-size: 160px 140px, 160px 140px, 160px 140px, 160px 140px, 160px 140px, 160px 140px, 100% 100%;
+  background-attachment: fixed;
+}
+.old a {
+  color: var(--link);
+}
+.old a:visited {
+  color: #551a8b;
+}
+.old a:hover {
+  color: #ff0080;
+  background: #ffff99;
+}
+
+.old-wrap {
+  max-width: 820px;
+  margin: 0 auto;
+}
+
+/* banner */
+.old-banner {
+  text-align: center;
+  border: 4px ridge #c9a2ff;
+  background:
+    repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.04) 0 6px, transparent 6px 12px),
+    linear-gradient(180deg, #2b1159, #4b1d8a);
+  padding: 18px 10px 0;
+  color: #fff;
+}
+.old .old-title {
+  display: inline-block;
+  font-family: "Comic Sans MS", "Comic Neue", "Chalkboard SE", cursive;
+  font-size: clamp(34px, 8vw, 56px);
+  font-weight: bold;
+  text-decoration: none;
+  background: linear-gradient(90deg, #ff6ec7, #ffe66d, #9dff3e, #3ef0ff, #c77dff, #ff6ec7);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent !important;
+  animation: old-rainbow 4s linear infinite;
+  filter: drop-shadow(3px 3px 0 #000);
+}
+.old .old-title:hover {
+  background-color: transparent;
+}
+.old-title span {
+  font-size: 0.6em;
+  vertical-align: middle;
+}
+@keyframes old-rainbow {
+  to {
+    background-position: 200% 0;
+  }
+}
+.old-sub {
+  font-family: "Courier New", monospace;
+  color: var(--cyan);
+  margin: 4px 0 12px;
+  letter-spacing: 2px;
+}
+.old-marquee {
+  overflow: hidden;
+  white-space: nowrap;
+  background: #000;
+  color: var(--lime);
+  font-family: "Courier New", monospace;
+  font-size: 14px;
+  border-top: 2px solid #c9a2ff;
+  margin: 0 -10px;
+  padding: 3px 0;
+}
+.old-marquee span {
+  display: inline-block;
+  padding-left: 100%;
+  animation: old-marquee 22s linear infinite;
+}
+@keyframes old-marquee {
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+/* columns */
+.old-cols {
+  display: grid;
+  gap: 12px;
+  margin-top: 12px;
+}
+@media (min-width: 720px) {
+  .old-cols {
+    grid-template-columns: 190px 1fr;
+    align-items: start;
+  }
+}
+.old-side {
+  display: grid;
+  gap: 10px;
+}
+@media (max-width: 719px) {
+  .old-side {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    order: 2;
+  }
+}
+.old-box {
+  background: var(--panel);
+  border: 3px double var(--purple);
+  padding: 0 8px 8px;
+}
+.old-box p {
+  margin: 6px 0;
+}
+.old-box-h {
+  margin: 0 -8px 6px;
+  padding: 2px 8px;
+  background: linear-gradient(90deg, var(--purple), #c77dff);
+  color: #fff;
+  font-family: "Comic Sans MS", "Comic Neue", cursive;
+  font-weight: bold;
+  font-size: 13px;
+}
+.old-nav {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.old-nav li {
+  padding: 2px 0;
+}
+.old-blink {
+  color: #00c000;
+  animation: old-blink 1s steps(1) infinite;
+}
+@keyframes old-blink {
+  50% {
+    opacity: 0;
+  }
+}
+.old-counter {
+  display: flex;
+  justify-content: center;
+  gap: 2px;
+  margin-top: 4px;
+}
+.old-counter span {
+  width: 17px;
+  padding: 2px 0;
+  text-align: center;
+  font-family: "Courier New", monospace;
+  font-weight: bold;
+  font-size: 16px;
+  color: #ff3b3b;
+  background: linear-gradient(180deg, #222 50%, #000 50%);
+  border: 1px solid #555;
+}
+.old-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  justify-content: center;
+}
+.old-buttons .old-box-h {
+  width: calc(100% + 16px);
+}
+.b88 {
+  width: 88px;
+  height: 31px;
+  display: grid;
+  place-items: center;
+  font-family: "Courier New", monospace;
+  font-weight: bold;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  border: 2px outset #ddd;
+  image-rendering: pixelated;
+}
+.b-a { background: linear-gradient(180deg, #a9c672, #6f8f3a); color: #1b2a10; }
+.b-b { background: #000; color: var(--lime); border-color: var(--lime); }
+.b-c { background: linear-gradient(90deg, #00f, #0ff); color: #fff; text-shadow: 1px 1px 0 #000; }
+.b-d { background: #ffe0f0; color: #d1006f; border-color: #ff6ec7; }
+.b-e { background: repeating-linear-gradient(45deg, #ffcf00 0 6px, #111 6px 12px); color: #fff; text-shadow: 1px 1px 0 #000, -1px -1px 0 #000; }
+.b-f { background: #1b2a10; color: #c4dc8c; }
+.old-ring {
+  text-align: center;
+  font-size: 11px;
+}
+
+/* main board */
+.old-main {
+  background: var(--panel);
+  border: 3px double var(--purple);
+  padding: 10px;
+  min-width: 0;
+}
+.old-board-h {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin: -10px -10px 12px;
+  padding: 5px 10px;
+  background: linear-gradient(90deg, #ff6ec7, #c77dff);
+  color: #fff;
+  font-family: "Comic Sans MS", "Comic Neue", cursive;
+  font-size: 16px;
+  font-weight: bold;
+  text-shadow: 1px 1px 0 #6b2fbf;
+}
+.old .old-btn {
+  display: inline-block;
+  padding: 2px 10px;
+  border: 2px outset #eee;
+  background: #e8e8e8;
+  color: #000 !important;
+  text-decoration: none;
+  font: bold 12px Verdana, sans-serif;
+  text-shadow: none;
+  cursor: pointer;
+}
+.old .old-btn:active {
+  border-style: inset;
+}
+.old .old-btn.big {
+  padding: 6px 18px;
+  font-size: 14px;
+}
+.old-note {
+  text-align: center;
+  font-style: italic;
+  color: #7a6a8a;
+  padding: 20px 0;
+}
+.old-back {
+  margin: 0 0 8px;
+}
+
+.old-post {
+  border: 2px dashed #c9a2ff;
+  background: #fff;
+  margin-bottom: 14px;
+}
+.old-post-h {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 6px 8px;
+  background: #f3eaff;
+  border-bottom: 1px dotted #c9a2ff;
+}
+.old-post-h a {
+  text-decoration: none;
+}
+.old-post-h h2 {
+  display: inline;
+  margin: 0;
+  font-family: "Trebuchet MS", sans-serif;
+  font-size: 17px;
+}
+.old-tag {
+  font-family: "Courier New", monospace;
+  font-weight: bold;
+  font-size: 12px;
+}
+.t-news { color: #d1006f; }
+.t-update { color: #0077aa; }
+.t-random { color: #6b2fbf; }
+.t-music { color: #2e8b00; }
+.old-new {
+  font-family: "Comic Sans MS", cursive;
+  font-weight: bold;
+  font-size: 11px;
+  color: #fff;
+  background: red;
+  padding: 0 4px;
+  transform: rotate(-6deg);
+  animation: old-blink 0.8s steps(1) infinite;
+}
+.old-post-body {
+  padding: 4px 12px;
+  overflow-wrap: anywhere;
+}
+.old-post-body img {
+  max-width: 100%;
+  border: 2px solid var(--ink);
+}
+.old-post-body blockquote {
+  margin: 8px 0;
+  padding: 4px 10px;
+  border-left: 4px solid var(--pink);
+  background: #fff0fa;
+}
+.old-post-body code {
+  font-family: "Courier New", monospace;
+  background: #eee;
+  padding: 0 3px;
+}
+.old-post-body h3,
+.old-post-body h4,
+.old-post-body h5 {
+  font-family: "Comic Sans MS", cursive;
+  color: var(--purple);
+  margin: 10px 0 4px;
+}
+.old-post-f {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 12px;
+  padding: 4px 8px;
+  border-top: 1px dotted #c9a2ff;
+  font-size: 11px;
+  color: #7a6a8a;
+}
+.old .old-linkbtn {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--link);
+  text-decoration: underline;
+  cursor: pointer;
+  font: inherit;
+}
+
+/* editor */
+.old-editor {
+  display: grid;
+  gap: 10px;
+}
+.old-editor label {
+  display: grid;
+  gap: 2px;
+  font-weight: bold;
+  font-size: 12px;
+}
+.old-editor input,
+.old-editor select,
+.old-editor textarea {
+  padding: 4px 6px;
+  border: 2px inset #ccc;
+  background: #fff;
+  font-family: Verdana, sans-serif;
+  font-size: 13px;
+  font-weight: normal;
+}
+.old-editor textarea {
+  font-family: "Courier New", monospace;
+  resize: vertical;
+  min-height: 220px;
+}
+.old-editor-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.old-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  padding: 3px;
+  background: #d4d0c8;
+  border: 2px outset #eee;
+}
+.old-toolbar button {
+  min-width: 30px;
+  padding: 2px 6px;
+  border: 2px outset #eee;
+  background: #d4d0c8;
+  cursor: pointer;
+  font-size: 12px;
+}
+.old-toolbar button:active,
+.old-toolbar button.on {
+  border-style: inset;
+}
+.old-spacer {
+  flex: 1;
+}
+.old-preview {
+  min-height: 220px;
+  border: 2px inset #ccc;
+  background: #fff;
+}
+.old-help {
+  margin: 0;
+  font-size: 11px;
+  color: #7a6a8a;
+  font-family: "Courier New", monospace;
+}
+.old-err {
+  color: red;
+  font-weight: bold;
+  margin: 0;
+}
+
+/* footer */
+.old-construction {
+  margin-top: 12px;
+  overflow: hidden;
+  height: 22px;
+  background: repeating-linear-gradient(-45deg, #ffcf00 0 14px, #111 14px 28px);
+  border: 2px solid #000;
+  display: grid;
+  place-items: center;
+}
+.old-construction span {
+  background: #ffcf00;
+  color: #000;
+  padding: 0 10px;
+  font: bold 12px "Courier New", monospace;
+  text-transform: uppercase;
+}
+.old-foot {
+  text-align: center;
+  color: #d9c8ff;
+  font-size: 11px;
+  margin-top: 10px;
+}
+.old-foot p {
+  margin: 4px 0;
+}
+.old-foot a,
+.old-foot .old-linkbtn {
+  color: var(--cyan) !important;
+}
+.old-foot a:hover {
+  background: none;
+}
+.old-small {
+  opacity: 0.85;
+}
+
+/* win98 login */
+.old-desktop {
+  min-height: calc(100vh - 60px);
+  display: grid;
+  place-items: center;
+}
+.win {
+  width: min(380px, 100%);
+  background: #c0c0c0;
+  border: 2px solid;
+  border-color: #fff #404040 #404040 #fff;
+  box-shadow: 1px 1px 0 #000, 6px 6px 0 rgba(0, 0, 0, 0.4);
+  font-family: Tahoma, "MS Sans Serif", Verdana, sans-serif;
+  font-size: 12px;
+  color: #000;
+}
+.win-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 3px 4px 3px 6px;
+  background: linear-gradient(90deg, #000080, #1084d0);
+  color: #fff;
+  font-weight: bold;
+}
+.old .win-x {
+  width: 18px;
+  height: 16px;
+  display: grid;
+  place-items: center;
+  background: #c0c0c0;
+  border: 2px solid;
+  border-color: #fff #404040 #404040 #fff;
+  color: #000 !important;
+  text-decoration: none;
+  font-weight: bold;
+  line-height: 1;
+}
+.win-body {
+  padding: 14px;
+  display: grid;
+  gap: 12px;
+}
+.win-row {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.win-row p {
+  margin: 0;
+}
+.win-icon {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: #000080;
+  color: #fff;
+  font: bold 20px "Times New Roman", serif;
+  border: 2px solid #fff;
+  box-shadow: 1px 1px 0 #000;
+}
+.win-field {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 8px;
+}
+.win-field input {
+  padding: 3px 4px;
+  border: 2px solid;
+  border-color: #404040 #fff #fff #404040;
+  background: #fff;
+  font-size: 13px;
+  outline: none;
+}
+.win-err {
+  margin: 0;
+  color: #a00;
+}
+.win-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+}
+.old .win-btn {
+  min-width: 76px;
+  padding: 4px 10px;
+  text-align: center;
+  background: #c0c0c0;
+  border: 2px solid;
+  border-color: #fff #404040 #404040 #fff;
+  box-shadow: 1px 1px 0 #000;
+  color: #000 !important;
+  text-decoration: none;
+  font: 12px Tahoma, Verdana, sans-serif;
+  cursor: pointer;
+}
+.old .win-btn:active {
+  border-color: #404040 #fff #fff #404040;
+}
+.old .win-btn:focus-visible {
+  outline: 1px dotted #000;
+  outline-offset: -5px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .old-marquee span,
+  .old .old-title,
+  .old-blink,
+  .old-new {
+    animation: none;
+  }
+}
