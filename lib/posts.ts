@@ -66,8 +66,9 @@ export function canDelete(me: PublicUser | null, post: Post, author: PublicUser 
   return me?.role === "moderator" && sectionOf(post) === "board" && !isAdmin(author);
 }
 
-const HITS = "old:hits";
-const VISITORS = "forum:visitors";
+// Reset on 2026-10-01 by moving to new keys (the old "old:hits" counted every page view).
+const HITS = "forum:hits";
+const VISITORS = "forum:visitor-ips";
 
 /**
  * The visitor counter. Each IP address is counted once, ever: with `countThis`
