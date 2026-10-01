@@ -1,8 +1,11 @@
 import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
 import { hasSession, sameOrigin } from "@/lib/auth";
 import { DROP_PREFIX } from "@/lib/drop";
+import { storageUsage } from "@/lib/storage";
 
 export const dynamic = "force-dynamic";
+
+const MAX_FILE = 500 * 1024 * 1024; // 500 MB
 
 export async function POST(req: Request) {
   const body = (await req.json()) as HandleUploadBody;
@@ -19,9 +22,11 @@ export async function POST(req: Request) {
       request: req,
       onBeforeGenerateToken: async (pathname) => {
         if (!pathname.startsWith(DROP_PREFIX)) throw new Error("Invalid path");
+        const { quota, used } = await storageUsage();
+        if (used >= quota) throw new Error("Storage is full. Delete some files first.");
         return {
           addRandomSuffix: true,
-          maximumSizeInBytes: 500 * 1024 * 1024, // 500 MB
+          maximumSizeInBytes: Math.min(MAX_FILE, quota - used),
         };
       },
       onUploadCompleted: async () => {

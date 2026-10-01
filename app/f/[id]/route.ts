@@ -1,6 +1,6 @@
 import { get } from "@vercel/blob";
 import { hasRedis, redis } from "@/lib/redis";
-import { fileKey, type DropFile } from "@/lib/drop";
+import { deleteFile, fileKey, isExpired, type DropFile } from "@/lib/drop";
 import { notFoundPage } from "@/lib/notFoundPage";
 
 export const dynamic = "force-dynamic";
@@ -15,6 +15,10 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 
   const file = await redis().get<DropFile>(fileKey(id));
   if (!file) return notFoundPage("That file doesn't exist (or was deleted).");
+  if (isExpired(file)) {
+    await deleteFile(file);
+    return notFoundPage("That file has expired.");
+  }
 
   const result = await get(file.pathname, {
     access: "private",

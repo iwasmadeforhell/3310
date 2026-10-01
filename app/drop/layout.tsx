@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
-import { Space_Grotesk, IBM_Plex_Mono } from "next/font/google";
+import { Instrument_Serif, Lora, IBM_Plex_Mono } from "next/font/google";
+import "../stars.css";
 import "./drop.css";
 
-const sans = Space_Grotesk({ subsets: ["latin"], variable: "--sans", weight: ["400", "500", "700"] });
+const serif = Instrument_Serif({ weight: "400", subsets: ["latin"], variable: "--serif", style: ["normal", "italic"] });
+const body = Lora({ subsets: ["latin"], variable: "--body" });
 const mono = IBM_Plex_Mono({ subsets: ["latin"], variable: "--mono", weight: ["400", "500"] });
 
 export const metadata: Metadata = {
@@ -11,5 +13,5 @@ export const metadata: Metadata = {
 };
 
 export default function DropLayout({ children }: { children: React.ReactNode }) {
-  return <div className={`dr ${sans.variable} ${mono.variable}`}>{children}</div>;
+  return <div className={`dr starry ${serif.variable} ${body.variable} ${mono.variable}`}>{children}</div>;
 }

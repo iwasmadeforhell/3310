@@ -34,7 +34,7 @@ export default function ManageClient({ items }: { items: Row[] }) {
     if (!files.length || busy) return;
     setBusy(true);
     try {
-      const images: { pathname: string; w?: number; h?: number }[] = [];
+      const images: { pathname: string; w?: number; h?: number; size: number }[] = [];
       for (const [i, file] of files.entries()) {
         setStatus(`Uploading ${i + 1}/${files.length}: ${file.name}`);
         const dims = await dimensions(file);
@@ -45,7 +45,7 @@ export default function ManageClient({ items }: { items: Row[] }) {
           onUploadProgress: ({ percentage }) =>
             setStatus(`Uploading ${i + 1}/${files.length}: ${file.name} — ${Math.round(percentage)}%`),
         });
-        images.push({ pathname: blob.pathname, ...dims });
+        images.push({ pathname: blob.pathname, ...dims, size: file.size });
       }
       setStatus("Saving…");
       const res = await fetch("/api/portfolio/items", {

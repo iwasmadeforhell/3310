@@ -1,6 +1,7 @@
 import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
 import { hasSession, sameOrigin } from "@/lib/auth";
 import { PF_PREFIX } from "@/lib/portfolio";
+import { storageUsage } from "@/lib/storage";
 
 export const dynamic = "force-dynamic";
 
@@ -23,10 +24,12 @@ export async function POST(req: Request) {
       request: req,
       onBeforeGenerateToken: async (pathname) => {
         if (!pathname.startsWith(PF_PREFIX)) throw new Error("Invalid path");
+        const { quota, used } = await storageUsage();
+        if (used >= quota) throw new Error("Storage is full. Delete some files first.");
         return {
           allowedContentTypes: IMAGE_TYPES,
           addRandomSuffix: true,
-          maximumSizeInBytes: 50 * 1024 * 1024,
+          maximumSizeInBytes: Math.min(50 * 1024 * 1024, quota - used),
         };
       },
       onUploadCompleted: async () => {

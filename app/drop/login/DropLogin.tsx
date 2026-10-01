@@ -10,7 +10,7 @@ export default function DropLogin() {
       </div>
       <form className="dr-login-box" onSubmit={submit}>
         <div className="dr-logo">
-          DROP<span>.</span>
+          Drop<span>.</span>
         </div>
         <p className="dr-sub">links + files · authorised use only</p>
         <div className="dr-inputrow">

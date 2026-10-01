@@ -25,10 +25,11 @@ export async function POST(req: Request) {
     ? body.images
         .filter((i: { pathname?: unknown }) => typeof i?.pathname === "string" && i.pathname.startsWith(PF_PREFIX))
         .slice(0, 40)
-        .map((i: { pathname: string; w?: unknown; h?: unknown }) => ({
+        .map((i: { pathname: string; w?: unknown; h?: unknown; size?: unknown }) => ({
           pathname: i.pathname,
           w: typeof i.w === "number" ? Math.round(i.w) : undefined,
           h: typeof i.h === "number" ? Math.round(i.h) : undefined,
+          size: typeof i.size === "number" ? Math.round(i.size) : undefined,
         }))
     : [];
   if (!images.length) return Response.json({ error: "Add at least one image." }, { status: 400 });

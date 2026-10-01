@@ -6,8 +6,11 @@ import { logout } from "@/components/useLogin";
 
 type Pending = { key: string; name: string; pct: number; error?: string };
 
+const THUMB_TYPES = /^image\/(png|jpe?g|gif|webp|avif)$/;
+const THUMB_MAX = 8 * 1024 * 1024; // don't pull big images just for a preview
+
 function bytes(n: number) {
-  if (!n) return "—";
+  if (n <= 0) return "0 B";
   const u = ["B", "KB", "MB", "GB"];
   let i = 0;
   while (n >= 1024 && i < u.length - 1) {
@@ -26,6 +29,11 @@ function ago(ts: number) {
   return new Date(ts).toLocaleDateString();
 }
 
+function timeLeft(ms: number) {
+  const m = Math.max(1, Math.ceil(ms / 60000));
+  return m < 60 ? `${m}m` : `${Math.floor(m / 60)}h ${m % 60}m`;
+}
+
 function safeName(name: string) {
   return name.replace(/[^\w.\-]+/g, "_").slice(-100) || "file";
 }
@@ -34,10 +42,15 @@ export default function DropClient({
   initialLinks,
   initialFiles,
   configured,
+  quota,
+  otherBytes,
 }: {
   initialLinks: ShortLink[];
   initialFiles: DropFile[];
   configured: boolean;
+  /** Total space in the shared Blob store, and how much the portfolio already uses. */
+  quota: number;
+  otherBytes: number;
 }) {
   const [base, setBase] = useState("");
   const [tab, setTab] = useState<"links" | "files">("links");
@@ -50,11 +63,31 @@ export default function DropClient({
   const [pending, setPending] = useState<Pending[]>([]);
   const [dragging, setDragging] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
+  const [temp, setTemp] = useState(false); // true = new uploads auto-delete after 24 hours
+  const [now, setNow] = useState(() => Date.now());
   const fileInput = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setBase(window.location.origin.replace("//drop.", "//"));
+    try {
+      setTemp(localStorage.getItem("dr-expiry") === "24h");
+    } catch {}
+    const tick = setInterval(() => setNow(Date.now()), 60_000);
+    return () => clearInterval(tick);
   }, []);
+
+  function chooseExpiry(t: boolean) {
+    setTemp(t);
+    try {
+      localStorage.setItem("dr-expiry", t ? "24h" : "never");
+    } catch {}
+  }
+
+  // Expired files drop out of the list on their own; the server deletes them.
+  const liveFiles = files.filter((f) => !f.expiresAt || f.expiresAt > now);
+  const used = otherBytes + liveFiles.reduce((n, f) => n + (f.size || 0), 0);
+  const left = Math.max(0, quota - used);
+  const usedPct = Math.min(100, (used / quota) * 100);
 
   async function copy(text: string) {
     try {
@@ -95,12 +128,16 @@ export default function DropClient({
     const arr = Array.from(list);
     if (!arr.length) return;
     setTab("files");
+    const expires = temp ? "24h" : "never";
+    let room = left;
     await Promise.all(
       arr.map(async (file) => {
         const key = `${file.name}-${file.size}-${Math.random()}`;
         setPending((p) => [...p, { key, name: file.name, pct: 0 }]);
         const set = (patch: Partial<Pending>) =>
           setPending((p) => p.map((x) => (x.key === key ? { ...x, ...patch } : x)));
+        if (file.size > room) return set({ error: `Not enough storage left (${bytes(left)} free)` });
+        room -= file.size;
         try {
           const blob = await upload(`drop/${safeName(file.name)}`, file, {
             access: "private",
@@ -116,6 +153,7 @@ export default function DropClient({
               name: file.name,
               size: file.size,
               contentType: blob.contentType || file.type,
+              expires,
             }),
           });
           if (!res.ok) throw new Error("Could not save file record");
@@ -155,11 +193,11 @@ export default function DropClient({
     >
       <header className="dr-head">
         <div className="dr-logo small">
-          DROP<span>.</span>
+          Drop<span>.</span>
         </div>
         <nav>
           <span className="dr-stat">
-            {links.length} links · {files.length} files
+            {links.length} links · {liveFiles.length} files
           </span>
           <button className="dr-ghost" onClick={() => logout()}>
             lock
@@ -170,6 +208,27 @@ export default function DropClient({
       {!configured && (
         <div className="dr-warn">Storage not connected — add Upstash Redis + a private Blob store in Vercel (see README).</div>
       )}
+
+      <div className="dr-storage">
+        <div className="dr-storage-row">
+          <span>
+            <strong>{bytes(left)}</strong> of storage left
+          </span>
+          <span>
+            {bytes(used)} of {bytes(quota)} used
+          </span>
+        </div>
+        <div
+          className={`dr-meter ${usedPct > 90 ? "full" : ""}`}
+          role="meter"
+          aria-label="Storage used"
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={Math.round(usedPct)}
+        >
+          <div style={{ width: `${usedPct}%` }} />
+        </div>
+      </div>
 
       <div className="dr-tabs" role="tablist">
         <button role="tab" aria-selected={tab === "links"} className={tab === "links" ? "on" : ""} onClick={() => setTab("links")}>
@@ -252,6 +311,15 @@ export default function DropClient({
               e.target.value = "";
             }}
           />
+          <div className="dr-expiry" role="radiogroup" aria-label="How long to keep new uploads">
+            <span>new uploads:</span>
+            <button type="button" role="radio" aria-checked={!temp} className={!temp ? "on" : ""} onClick={() => chooseExpiry(false)}>
+              permanent link
+            </button>
+            <button type="button" role="radio" aria-checked={temp} className={temp ? "on" : ""} onClick={() => chooseExpiry(true)}>
+              delete after 24 hours
+            </button>
+          </div>
 
           <ul className="dr-list">
             {pending.map((p) => (
@@ -276,11 +344,19 @@ export default function DropClient({
                 </div>
               </li>
             ))}
-            {files.map((f) => {
+            {liveFiles.map((f) => {
               const link = `${base}/f/${f.id}`;
               return (
                 <li key={f.id}>
                   <div className="dr-li-main">
+                    {THUMB_TYPES.test(f.contentType) && f.size <= THUMB_MAX ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img className="dr-thumb" src={`/f/${f.id}`} alt="" loading="lazy" decoding="async" />
+                    ) : (
+                      <span className="dr-thumb" aria-hidden>
+                        {(f.name.split(".").pop() ?? "").slice(0, 4) || "file"}
+                      </span>
+                    )}
                     <button className="dr-short" onClick={() => copy(link)} title="Copy link">
                       /f/{f.id}
                       <em>{copied === link ? "copied ✓" : "copy"}</em>
@@ -292,6 +368,11 @@ export default function DropClient({
                   <div className="dr-li-meta">
                     <span>{bytes(f.size)}</span>
                     <span>{ago(f.createdAt)}</span>
+                    {f.expiresAt ? (
+                      <span className="dr-exp">deletes in {timeLeft(f.expiresAt - now)}</span>
+                    ) : (
+                      <span className="dr-perm">permanent</span>
+                    )}
                     <a className="dr-x" href={`${link}?dl`} aria-label="Download">
                       ↓
                     </a>
@@ -302,7 +383,7 @@ export default function DropClient({
                 </li>
               );
             })}
-            {!files.length && !pending.length && <li className="dr-empty">No files yet.</li>}
+            {!liveFiles.length && !pending.length &&<li className="dr-empty">No files yet.</li>}
           </ul>
         </section>
       )}

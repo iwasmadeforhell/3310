@@ -1,7 +1,7 @@
 import "server-only";
 import { hasRedis, listDocs, redis } from "./redis";
 
-export type PfImage = { pathname: string; w?: number; h?: number };
+export type PfImage = { pathname: string; w?: number; h?: number; size?: number };
 export type PfItem = {
   id: string;
   title: string;

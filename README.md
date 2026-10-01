@@ -32,6 +32,7 @@ Nothing can stop someone who *is* logged in from screenshotting an image. Disabl
    - `PORTFOLIO_PASSWORD`
    - `PORTFOLIO_MANAGE_PASSWORD`
    - `DROP_PASSWORD`
+   - `CRON_SECRET`: any random string. Lets the daily cron in `vercel.json` delete expired drop files.
    - `ADMIN_PASSWORD` for old.3310.nz (the admin username is `nokia`; set `ADMIN_USERNAME` to change it)
 5. **Settings → Domains**: add `3310.nz`, `www.3310.nz`, `portfolio.3310.nz`, `drop.3310.nz` and `old.3310.nz`.
 6. **Cloudflare DNS** (leave the Proton Mail MX/TXT/DKIM records alone):
@@ -52,7 +53,7 @@ Nothing can stop someone who *is* logged in from screenshotting an image. Disabl
 - **Music**: edit `site.config.ts`. Put MP3s in `public/music/` and add `{ title, artist, src: "/music/file.mp3" }`. To show an embed under the phone, paste a SoundCloud, Spotify or YouTube link into `embed`. Anything in `public/` is public, so only put music there.
 - **Portfolio**: go to `portfolio.3310.nz/manage` and log in with the manage password.
 - **News post**: go to `old.3310.nz/login`, then use "+ new post". Posts support `**bold**`, `*italic*`, `[link](https://…)`, `![img](https://…)`, `# heading`, `- list` and `> quote`.
-- **Short link / file**: go to `drop.3310.nz`. You can drag files anywhere on the page (500 MB max each).
+- **Short link / file**: go to `drop.3310.nz`. You can drag files anywhere on the page (500 MB max each). Each upload is either a permanent link or deleted after 24 hours, chosen on the Files tab. The bar at the top shows how much of the Blob store is left (1 GB on the Hobby plan; set `BLOB_QUOTA_GB` if that changes).
 
 ## Local development
 

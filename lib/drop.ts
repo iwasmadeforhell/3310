@@ -1,8 +1,10 @@
 import "server-only";
+import { del } from "@vercel/blob";
 import { hasRedis, redis } from "./redis";
 
 export type ShortLink = { code: string; url: string; createdAt: number; clicks?: number };
-export type DropFile = { id: string; pathname: string; name: string; size: number; contentType: string; createdAt: number };
+/** `expiresAt` is only set on files uploaded as "delete after 24 hours". */
+export type DropFile = { id: string; pathname: string; name: string; size: number; contentType: string; createdAt: number; expiresAt?: number };
 
 export const LINK_INDEX = "lk:index";
 export const linkKey = (code: string) => `lk:${code}`;
@@ -11,6 +13,7 @@ export const clickKey = (code: string) => `lk:clicks:${code}`;
 export const FILE_INDEX = "fl:index";
 export const fileKey = (id: string) => `fl:${id}`;
 export const DROP_PREFIX = "drop/";
+export const EXPIRY_MS = 24 * 60 * 60 * 1000;
 
 export const CODE_RE = /^[A-Za-z0-9_-]{1,48}$/;
 
@@ -28,11 +31,25 @@ export async function listLinks(): Promise<ShortLink[]> {
     .filter((d): d is ShortLink => d !== null);
 }
 
+export function isExpired(f: DropFile, now = Date.now()): boolean {
+  return typeof f.expiresAt === "number" && f.expiresAt <= now;
+}
+
+/** Delete the stored blob and its record, so the /f/<id> link stops working. */
+export async function deleteFile(f: DropFile) {
+  await del(f.pathname).catch(() => {});
+  const r = redis();
+  await Promise.all([r.del(fileKey(f.id)), r.zrem(FILE_INDEX, f.id)]);
+}
+
+/** Lists files newest first. Expired ones are deleted on the way and left out. */
 export async function listFiles(): Promise<DropFile[]> {
   if (!hasRedis()) return [];
   const r = redis();
   const ids = await r.zrange<string[]>(FILE_INDEX, 0, 999, { rev: true });
   if (!ids.length) return [];
-  const docs = await r.mget<(DropFile | null)[]>(...ids.map(fileKey));
-  return docs.filter((d): d is DropFile => d !== null);
+  const docs = (await r.mget<(DropFile | null)[]>(...ids.map(fileKey))).filter((d): d is DropFile => d !== null);
+  const expired = docs.filter((d) => isExpired(d));
+  await Promise.all(expired.map(deleteFile));
+  return docs.filter((d) => !isExpired(d));
 }
