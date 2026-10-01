@@ -1,6 +1,9 @@
-import { bumpHits, fmtDate, type Post } from "@/lib/posts";
+import { cookies } from "next/headers";
+import { fmtDate, visitorCount, type Post } from "@/lib/posts";
+import { THEME_COOKIE } from "@/lib/theme";
 import { isAdmin, type PublicUser } from "@/lib/users";
 import LogoutButton from "@/components/LogoutButton";
+import ThemeToggle from "./ThemeToggle";
 import UserName from "./UserName";
 
 const root = () => process.env.ROOT_DOMAIN ?? "3310.nz";
@@ -27,7 +30,8 @@ export default async function Shell({
   latest?: Post;
   count?: boolean;
 }) {
-  const hits = count ? await bumpHits().catch(() => 0) : 0;
+  const hits = await visitorCount(count).catch(() => 0);
+  const dark = (await cookies()).get(THEME_COOKIE)?.value === "dark";
   const r = root();
   return (
     <div className="old-wrap">
@@ -84,6 +88,7 @@ export default async function Shell({
               <span className="old-blink">●</span> online
             </p>
             {latest?.mood && <p>mood: <i>{latest.mood}</i></p>}
+            <ThemeToggle initialDark={dark} />
           </div>
 
           <div className="old-box">

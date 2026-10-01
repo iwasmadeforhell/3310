@@ -1,4 +1,6 @@
 import "server-only";
+import { createHmac } from "node:crypto";
+import { headers } from "next/headers";
 import { hasRedis, listDocs, redis } from "./redis";
 import { isAdmin, ownerId, usersById, type PublicUser } from "./users";
 import { votesFor, type Votes } from "./votes";
@@ -64,9 +66,26 @@ export function canDelete(me: PublicUser | null, post: Post, author: PublicUser 
   return me?.role === "moderator" && sectionOf(post) === "board" && !isAdmin(author);
 }
 
-export async function bumpHits(): Promise<number> {
+const HITS = "old:hits";
+const VISITORS = "forum:visitors";
+
+/**
+ * The visitor counter. Each IP address is counted once, ever: with `countThis`
+ * the current visitor is added if they haven't been seen before. IPs are stored
+ * only as keyed hashes, never in the clear.
+ */
+export async function visitorCount(countThis: boolean): Promise<number> {
   if (!hasRedis()) return 0;
-  return redis().incr("old:hits");
+  const r = redis();
+  if (countThis) {
+    const h = await headers();
+    const ip = h.get("x-real-ip") ?? h.get("x-forwarded-for")?.split(",")[0]?.trim();
+    if (ip) {
+      const tag = createHmac("sha256", process.env.SESSION_SECRET ?? "visitors").update(ip).digest("base64url").slice(0, 22);
+      if (await r.sadd(VISITORS, tag)) return r.incr(HITS);
+    }
+  }
+  return Number((await r.get<number>(HITS)) ?? 0);
 }
 
 export function fmtDate(ts: number) {

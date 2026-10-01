@@ -604,6 +604,7 @@
   .old .old-title,
   .old-blink,
   .old-new,
+  .old .old-vote > button.up.on,
   .old-user span {
     animation: none;
   }
@@ -674,8 +675,14 @@
   border-style: inset;
   color: #fff;
 }
+/* a pressed like goes rainbow */
 .old .old-vote > button.up.on {
-  background: #1a7f37;
+  background: linear-gradient(90deg, #ff6ec7, #ffe66d, #9dff3e, #3ef0ff, #c77dff, #ff6ec7);
+  background-size: 200% 100%;
+  animation: old-rainbow 2s linear infinite;
+  color: #000;
+  text-shadow: 0 0 2px #fff, 0 0 2px #fff;
+  border-color: #fff;
 }
 .old .old-vote > button.down.on {
   background: #c4004f;
@@ -763,4 +770,88 @@
 .old-table th {
   background: #f3eaff;
   font-size: 12px;
+}
+
+.old .old-theme {
+  width: 100%;
+  margin-top: 4px;
+  padding: 2px 6px;
+  border: 2px outset #eee;
+  background: #d4d0c8;
+  color: #000;
+  font: bold 11px/1.6 Verdana, Geneva, Tahoma, sans-serif;
+  cursor: pointer;
+}
+
+/* ───────────── dark mode ─────────────
+   Set by the `dark` class on .old (see layout.tsx / ThemeToggle.tsx). The
+   Win98 dialogs and grey buttons keep their look in both themes. */
+.old.dark {
+  --panel: #1a1030;
+  --ink: #e6dcf7;
+  --purple: #9a6cf0;
+  --link: #8ab4ff;
+  background-color: #05020d;
+  background-image:
+    radial-gradient(1px 1px at 10px 14px, #fff 50%, transparent 51%),
+    radial-gradient(1px 1px at 52px 80px, #fff 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 90px 30px, #ffe68a 50%, transparent 51%),
+    radial-gradient(1px 1px at 130px 110px, #9cf 50%, transparent 51%),
+    radial-gradient(1px 1px at 30px 120px, #fff 50%, transparent 51%),
+    radial-gradient(2px 2px at 140px 60px, #fff 50%, transparent 51%),
+    linear-gradient(180deg, #05020d, #130726);
+}
+.old.dark a:visited {
+  color: #c39bff;
+}
+.old.dark a:hover {
+  color: #ff8ad4;
+  background: #3a1c66;
+}
+.old.dark .old-post,
+.old.dark .old-table {
+  background: #120a24;
+  border-color: #5a3d99;
+}
+.old.dark .old-post-h,
+.old.dark .old-table th {
+  background: #241443;
+  border-color: #5a3d99;
+}
+.old.dark .old-post-f,
+.old.dark .old-table td,
+.old.dark .old-table th {
+  border-color: #5a3d99;
+}
+.old.dark .old-post-f,
+.old.dark .old-note,
+.old.dark .old-help,
+.old.dark .old-intro {
+  color: #a999c4;
+}
+.old.dark .old-post-body blockquote {
+  background: #2a1438;
+}
+.old.dark .old-post-body code {
+  background: #2c2440;
+}
+.old.dark .t-news { color: #ff7ab8; }
+.old.dark .t-update { color: #5fd0ff; }
+.old.dark .t-random { color: #c39bff; }
+.old.dark .t-music { color: #8be05a; }
+.old.dark .old-editor input,
+.old.dark .old-editor select,
+.old.dark .old-editor textarea,
+.old.dark .old-preview,
+.old.dark .old-table select {
+  background: #0d0719;
+  color: var(--ink);
+  border-color: #5a3d99;
+}
+.old.dark .old-err {
+  color: #ff7a7a;
+}
+/* dialogs are light grey in both themes, so their links stay dark blue */
+.old.dark .win a:not(.win-btn):not(.win-x) {
+  color: #0000ee;
 }

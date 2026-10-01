@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
+import { THEME_COOKIE } from "@/lib/theme";
 import "./old.css";
 
 export const metadata: Metadata = {
@@ -6,6 +8,7 @@ export const metadata: Metadata = {
   description: "news & updates from 3310.nz",
 };
 
-export default function OldLayout({ children }: { children: React.ReactNode }) {
-  return <div className="old">{children}</div>;
+export default async function OldLayout({ children }: { children: React.ReactNode }) {
+  const dark = (await cookies()).get(THEME_COOKIE)?.value === "dark";
+  return <div className={dark ? "old dark" : "old"}>{children}</div>;
 }
