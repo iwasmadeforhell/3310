@@ -855,3 +855,55 @@
 .old.dark .win a:not(.win-btn):not(.win-x) {
   color: #0000ee;
 }
+
+/* ───────────── private messages ───────────── */
+.old .old-hasmail {
+  font-weight: bold;
+  color: #d1006f;
+}
+.old-unread td {
+  font-weight: bold;
+}
+.old-thread {
+  display: grid;
+  gap: 8px;
+  max-height: 60vh;
+  overflow-y: auto;
+  margin-bottom: 12px;
+  padding: 2px;
+}
+.old-msg {
+  max-width: min(640px, 88%);
+  justify-self: start;
+  border: 2px dashed #c9a2ff;
+  background: #fff;
+}
+.old-msg.mine {
+  justify-self: end;
+  background: #f3eaff;
+}
+.old-msg-h {
+  padding: 3px 8px;
+  border-bottom: 1px dotted #c9a2ff;
+  font-size: 11px;
+  color: #7a6a8a;
+}
+.old-msg-body {
+  padding: 6px 10px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.old.dark .old-hasmail {
+  color: #ff7ab8;
+}
+.old.dark .old-msg {
+  background: #120a24;
+  border-color: #5a3d99;
+}
+.old.dark .old-msg.mine {
+  background: #241443;
+}
+.old.dark .old-msg-h {
+  border-color: #5a3d99;
+  color: #a999c4;
+}

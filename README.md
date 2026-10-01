@@ -67,6 +67,8 @@ Visitors can read everything. Registering (`/register`) takes a user name, a pas
 | admin | Post in the devlog, edit or delete any post, change roles and delete accounts at `/users` |
 | owner | The `ADMIN_USERNAME` login from the env vars. An admin that can't be demoted or deleted, and the only one who can make or change other admins |
 
+- **Member list** (`/members`): public, shows every account with its role, join date and post count. Logged-in members get a "message" link next to each name.
+- **Private messages** (`/messages`): one-to-one conversations between accounts, plain text, up to 2000 characters each, with an unread count in the sidebar. Nobody else can open a conversation through the site, admins included, but messages are stored unencrypted in Redis. Deleting an account deletes its conversations for both sides. Members can send 20 messages per 5 minutes.
 - Accounts live in Redis with scrypt-hashed passwords. There is no email and no password reset: to help someone who forgot theirs, delete the account at `/users` so they can register again.
 - Roles are read from Redis on every request, so a role change or a deleted account takes effect immediately.
 - Limits: 3 new accounts per hour per IP, 8 failed logins per 15 minutes, 5 posts per 10 minutes for members.

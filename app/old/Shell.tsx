@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import { unreadCount } from "@/lib/messages";
 import { fmtDate, visitorCount, type Post } from "@/lib/posts";
 import { THEME_COOKIE } from "@/lib/theme";
 import { isAdmin, type PublicUser } from "@/lib/users";
@@ -30,7 +31,7 @@ export default async function Shell({
   latest?: Post;
   count?: boolean;
 }) {
-  const hits = await visitorCount(count).catch(() => 0);
+  const [hits, unread] = await Promise.all([visitorCount(count).catch(() => 0), me ? unreadCount(me.id).catch(() => 0) : 0]);
   const dark = (await cookies()).get(THEME_COOKIE)?.value === "dark";
   const r = root();
   return (
@@ -57,8 +58,9 @@ export default async function Shell({
               <li><a href={`https://${r}`}>» main site</a></li>
               <li><a href={`https://portfolio.${r}`}>» portfolio</a></li>
               <li><a href="/devlog">» devlog</a></li>
+              <li><a href="/members">» member list</a></li>
               {me && <li><a href="/new">» new post</a></li>}
-              {isAdmin(me) && <li><a href="/users">» members</a></li>}
+              {isAdmin(me) && <li><a href="/users">» manage members</a></li>}
             </ul>
           </div>
 
@@ -70,6 +72,11 @@ export default async function Shell({
                   hi <UserName user={me} />
                 </p>
                 <ul className="old-nav">
+                  <li>
+                    <a href="/messages" className={unread ? "old-hasmail" : ""}>
+                      » messages{unread ? ` (${unread} new)` : ""}
+                    </a>
+                  </li>
                   <li><a href="/account">» my account</a></li>
                   <li><LogoutButton className="old-linkbtn" label="» log out" next="/" /></li>
                 </ul>

@@ -1,5 +1,6 @@
 // Account settings (your own name colour) and user management (admins).
 import { forbidden, sameOrigin, unauthorized } from "@/lib/auth";
+import { purgeMessages } from "@/lib/messages";
 import { redis } from "@/lib/redis";
 import { POST_INDEX, listPosts, postKey } from "@/lib/posts";
 import { ROLES, currentUser, deleteUser, getUser, isAdmin, setColor, setRole, validColor, type Role } from "@/lib/users";
@@ -41,7 +42,7 @@ export async function PUT(req: Request) {
   return Response.json(await setRole(t.user.id, role));
 }
 
-/** Delete an account. With ?posts=1 their posts are deleted too. */
+/** Delete an account and its private messages. With ?posts=1 their posts are deleted too. */
 export async function DELETE(req: Request) {
   const url = new URL(req.url);
   const t = await target(req, url.searchParams.get("id") ?? "");
@@ -51,6 +52,6 @@ export async function DELETE(req: Request) {
     const r = redis();
     await Promise.all(posts.flatMap((p) => [r.del(postKey(p.id)), r.zrem(POST_INDEX, p.id), clearVotes(p.id)]));
   }
-  await deleteUser(t.user.id);
+  await Promise.all([deleteUser(t.user.id), purgeMessages(t.user.id)]);
   return Response.json({ ok: true });
 }

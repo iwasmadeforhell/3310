@@ -14,7 +14,7 @@ export default async function Users() {
   return (
     <Shell me={me} count={false}>
       <div className="old-board-h">
-        <span>♛ members</span>
+        <span>♛ manage members</span>
       </div>
       <UsersAdmin initial={await listUsers()} owner={!!me.owner} />
     </Shell>
