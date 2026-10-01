@@ -13,7 +13,8 @@ function bytes(n: number) {
   if (n <= 0) return "0 B";
   const u = ["B", "KB", "MB", "GB"];
   let i = 0;
-  while (n >= 1024 && i < u.length - 1) {
+  // 1023.5 so a value that would round up to "1024 MB" becomes "1.0 GB" instead
+  while (n >= 1023.5 && i < u.length - 1) {
     n /= 1024;
     i++;
   }
