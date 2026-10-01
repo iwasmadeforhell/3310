@@ -15,7 +15,7 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
-  const denied = await guard(req, "admin");
+  const denied = await guard(req, "manage");
   if (denied) return denied;
 
   const body = await req.json().catch(() => null);
@@ -48,7 +48,7 @@ export async function POST(req: Request) {
 }
 
 export async function PATCH(req: Request) {
-  const denied = await guard(req, "admin");
+  const denied = await guard(req, "manage");
   if (denied) return denied;
   const body = await req.json().catch(() => null);
   const item = body?.id ? await getPortfolioItem(String(body.id)) : null;
@@ -65,7 +65,7 @@ export async function PATCH(req: Request) {
 }
 
 export async function DELETE(req: Request) {
-  const denied = await guard(req, "admin");
+  const denied = await guard(req, "manage");
   if (denied) return denied;
   const id = new URL(req.url).searchParams.get("id") ?? "";
   const item = await getPortfolioItem(id);

@@ -5,28 +5,31 @@
 // The HMAC key is derived from SESSION_SECRET *and* the section's password,
 // so changing a password instantly invalidates every existing session.
 
-export type Scope = "portfolio" | "drop" | "admin";
+export type Scope = "portfolio" | "manage" | "drop" | "admin";
 
 export const COOKIE: Record<Scope, string> = {
   portfolio: "nk_pf",
+  manage: "nk_pm",
   drop: "nk_dr",
   admin: "nk_ad",
 };
 
 export const MAX_AGE: Record<Scope, number> = {
   portfolio: 60 * 60 * 24 * 7, // 7 days
+  manage: 60 * 60 * 24 * 7, // 7 days
   drop: 60 * 60 * 24 * 30, // 30 days
   admin: 60 * 60 * 24 * 7, // 7 days
 };
 
 const PASSWORD_ENV: Record<Scope, string> = {
   portfolio: "PORTFOLIO_PASSWORD",
+  manage: "PORTFOLIO_MANAGE_PASSWORD",
   drop: "DROP_PASSWORD",
   admin: "ADMIN_PASSWORD",
 };
 
 export function isScope(v: unknown): v is Scope {
-  return v === "portfolio" || v === "drop" || v === "admin";
+  return v === "portfolio" || v === "manage" || v === "drop" || v === "admin";
 }
 
 function passwordFor(scope: Scope): string {

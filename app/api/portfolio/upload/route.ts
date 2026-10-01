@@ -12,7 +12,7 @@ export async function POST(req: Request) {
   const body = (await req.json()) as HandleUploadBody;
 
   if (body.type === "blob.generate-client-token") {
-    if (!sameOrigin(req) || !(await hasSession("admin"))) {
+    if (!sameOrigin(req) || !(await hasSession("manage"))) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
   }

@@ -44,6 +44,7 @@ export async function proxy(req: NextRequest) {
 
   const cookie = (name: string) => req.cookies.get(name)?.value;
   const isAdmin = await verifyToken("admin", cookie(COOKIE.admin));
+  const isManager = await verifyToken("manage", cookie(COOKIE.manage));
   const toLogin = (extra = "") => {
     const dest = url.clone();
     dest.pathname = "/login";
@@ -54,8 +55,8 @@ export async function proxy(req: NextRequest) {
   // ---------- section gates ----------
   if (section === "portfolio" && path !== "/login") {
     if (path.startsWith("/manage")) {
-      if (!isAdmin) return toLogin("?as=admin");
-    } else if (!isAdmin && !(await verifyToken("portfolio", cookie(COOKIE.portfolio)))) {
+      if (!isManager) return toLogin("?as=admin");
+    } else if (!isManager && !(await verifyToken("portfolio", cookie(COOKIE.portfolio)))) {
       return toLogin();
     }
   }

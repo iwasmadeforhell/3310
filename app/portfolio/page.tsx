@@ -11,7 +11,7 @@ export default async function PortfolioPage() {
   // Real gate: checked on the server for every request.
   if (!(await canViewPortfolio())) redirect("/login");
 
-  const [items, isAdmin] = await Promise.all([listPortfolio(), hasSession("admin")]);
+  const [items, isAdmin] = await Promise.all([listPortfolio(), hasSession("manage")]);
   const gallery: GalleryItem[] = items.map((i) => ({
     id: i.id,
     title: i.title,

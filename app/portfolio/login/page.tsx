@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 
 export default async function Page({ searchParams }: { searchParams: Promise<{ as?: string }> }) {
   const asAdmin = (await searchParams).as === "admin";
-  if (asAdmin ? await hasSession("admin") : await canViewPortfolio()) {
+  if (asAdmin ? await hasSession("manage") : await canViewPortfolio()) {
     redirect(asAdmin ? "/manage" : "/");
   }
   return <PortfolioLogin asAdmin={asAdmin} />;

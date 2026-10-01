@@ -7,7 +7,7 @@ import ManageClient from "./ManageClient";
 export const dynamic = "force-dynamic";
 
 export default async function ManagePage() {
-  if (!(await hasSession("admin"))) redirect("/login?as=admin");
+  if (!(await hasSession("manage"))) redirect("/login?as=admin");
   const items = await listPortfolio();
 
   return (

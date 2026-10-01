@@ -10,7 +10,7 @@ export async function hasSession(scope: Scope): Promise<boolean> {
 }
 
 export async function canViewPortfolio(): Promise<boolean> {
-  return (await hasSession("portfolio")) || (await hasSession("admin"));
+  return (await hasSession("portfolio")) || (await hasSession("manage"));
 }
 
 /** Basic CSRF guard for state-changing requests: the Origin must match the Host. */
