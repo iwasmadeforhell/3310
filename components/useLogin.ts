@@ -3,6 +3,7 @@ import { useState, type FormEvent } from "react";
 import type { Scope } from "@/lib/session";
 
 export function useLogin(scope: Scope, next = "/") {
+  const [username, setUsername] = useState(""); // only the admin scope uses it
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -16,7 +17,7 @@ export function useLogin(scope: Scope, next = "/") {
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ scope, password }),
+        body: JSON.stringify({ scope, username, password }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
@@ -32,7 +33,7 @@ export function useLogin(scope: Scope, next = "/") {
     }
   }
 
-  return { password, setPassword, error, busy, submit };
+  return { username, setUsername, password, setPassword, error, busy, submit };
 }
 
 export async function logout(next = "/login") {

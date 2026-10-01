@@ -338,6 +338,27 @@
   font-size: 11px;
   color: #7a6a8a;
 }
+/* forum-rank username: baby blue gradient on a dark chip so it reads on any panel */
+.old-user {
+  display: inline-block;
+  padding: 0 6px;
+  border: 1px solid #4f86c6;
+  border-radius: 2px;
+  background: linear-gradient(180deg, #101c3a, #070d1f);
+  box-shadow: 0 0 5px rgba(162, 207, 254, 0.75);
+  font: bold 12px/1.45 Verdana, Geneva, Tahoma, sans-serif;
+  letter-spacing: 0.5px;
+  vertical-align: baseline;
+}
+.old-user span {
+  background: linear-gradient(90deg, #a2cffe, #eaf5ff, #6db3ff, #a2cffe);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: old-rainbow 3s linear infinite;
+  filter: drop-shadow(0 0 3px rgba(162, 207, 254, 0.9));
+}
 .old .old-linkbtn {
   background: none;
   border: 0;
@@ -526,6 +547,9 @@
   align-items: center;
   gap: 8px;
 }
+.win-field span {
+  min-width: 68px;
+}
 .win-field input {
   padding: 3px 4px;
   border: 2px solid;
@@ -568,7 +592,8 @@
   .old-marquee span,
   .old .old-title,
   .old-blink,
-  .old-new {
+  .old-new,
+  .old-user span {
     animation: none;
   }
 }

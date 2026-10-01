@@ -99,3 +99,12 @@ export async function checkPassword(scope: Scope, input: string): Promise<boolea
   const [a, b] = await Promise.all([hmac(salt, input), hmac(salt, pw)]);
   return safeEqual(b64url(a), b64url(b));
 }
+
+/** The admin login also asks for a username. It isn't a secret (the password
+ *  is), so it has a default and can be overridden with ADMIN_USERNAME. */
+export function checkUsername(scope: Scope, input: unknown): boolean {
+  if (scope !== "admin") return true;
+  if (typeof input !== "string" || input.length > 64) return false;
+  const expected = (process.env.ADMIN_USERNAME || "nokia").trim().toLowerCase();
+  return safeEqual(input.trim().toLowerCase(), expected);
+}

@@ -1,6 +1,7 @@
 import { render } from "@/lib/minimark";
 import { fmtDate, type Post } from "@/lib/posts";
 import PostAdmin from "./PostAdmin";
+import UserName from "./UserName";
 
 const NEW_MS = 1000 * 60 * 60 * 24 * 7;
 
@@ -16,7 +17,7 @@ export default function PostView({ post, isAdmin, full }: { post: Post; isAdmin:
       <div className="old-post-body" dangerouslySetInnerHTML={{ __html: render(post.body) }} />
       <div className="old-post-f">
         <span>
-          posted by <b>admin</b> on {fmtDate(post.createdAt)}
+          posted by <UserName /> on {fmtDate(post.createdAt)}
           {post.updatedAt ? ` (edited ${fmtDate(post.updatedAt)})` : ""}
           {post.mood ? ` · mood: ${post.mood}` : ""}
         </span>

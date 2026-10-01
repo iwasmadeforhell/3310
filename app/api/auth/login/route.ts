@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { COOKIE, MAX_AGE, checkPassword, createToken, isConfigured, isScope } from "@/lib/session";
+import { COOKIE, MAX_AGE, checkPassword, checkUsername, createToken, isConfigured, isScope } from "@/lib/session";
 import { clientIp, sameOrigin } from "@/lib/auth";
 import { clearRateLimit, rateLimited } from "@/lib/redis";
 
@@ -8,13 +8,13 @@ export const dynamic = "force-dynamic";
 export async function POST(req: Request) {
   if (!sameOrigin(req)) return NextResponse.json({ error: "Bad origin" }, { status: 403 });
 
-  let body: { scope?: unknown; password?: unknown };
+  let body: { scope?: unknown; username?: unknown; password?: unknown };
   try {
     body = await req.json();
   } catch {
     return NextResponse.json({ error: "Bad request" }, { status: 400 });
   }
-  const { scope, password } = body;
+  const { scope, username, password } = body;
   if (!isScope(scope) || typeof password !== "string") {
     return NextResponse.json({ error: "Bad request" }, { status: 400 });
   }
@@ -27,9 +27,12 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Too many attempts. Try again in 15 minutes." }, { status: 429 });
   }
 
-  if (!(await checkPassword(scope, password))) {
+  // Check both so a wrong username and a wrong password look the same.
+  const passwordOk = await checkPassword(scope, password);
+  if (!checkUsername(scope, username) || !passwordOk) {
     await new Promise((r) => setTimeout(r, 500 + Math.random() * 300));
-    return NextResponse.json({ error: "Wrong password." }, { status: 401 });
+    const error = scope === "admin" ? "Wrong username or password." : "Wrong password.";
+    return NextResponse.json({ error }, { status: 401 });
   }
 
   await clearRateLimit(limitKey);

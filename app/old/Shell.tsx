@@ -1,5 +1,6 @@
 import { bumpHits, fmtDate, type Post } from "@/lib/posts";
 import LogoutButton from "@/components/LogoutButton";
+import UserName from "./UserName";
 
 const root = () => process.env.ROOT_DOMAIN ?? "3310.nz";
 
@@ -95,7 +96,7 @@ export default async function Shell({
         <p className="old-small">
           {isAdmin ? (
             <>
-              logged in as admin · <a href="/new">new post</a> · <LogoutButton className="old-linkbtn" label="log out" next="/" />
+              logged in as <UserName /> ·<a href="/new">new post</a> · <LogoutButton className="old-linkbtn" label="log out" next="/" />
             </>
           ) : (
             <a href="/login">admin login</a>

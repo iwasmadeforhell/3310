@@ -2,7 +2,7 @@
 import { useLogin } from "@/components/useLogin";
 
 export default function OldLogin() {
-  const { password, setPassword, error, busy, submit } = useLogin("admin", "/");
+  const { username, setUsername, password, setPassword, error, busy, submit } = useLogin("admin", "/");
   return (
     <div className="old-desktop">
       <form className="win" onSubmit={submit}>
@@ -18,16 +18,31 @@ export default function OldLogin() {
               ?
             </div>
             <p>
-              Type your admin password to post news &amp; updates to <b>old.3310.nz</b>.
+              Type your user name and password to post news &amp; updates to <b>old.3310.nz</b>.
             </p>
           </div>
+          <label className="win-field">
+            <span>
+              <u>U</u>ser name:
+            </span>
+            <input
+              type="text"
+              autoFocus
+              autoComplete="username"
+              autoCapitalize="none"
+              spellCheck={false}
+              maxLength={64}
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              disabled={busy}
+            />
+          </label>
           <label className="win-field">
             <span>
               <u>P</u>assword:
             </span>
             <input
               type="password"
-              autoFocus
               autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -36,7 +51,7 @@ export default function OldLogin() {
           </label>
           {error && <p className="win-err">⚠ {error}</p>}
           <div className="win-actions">
-            <button type="submit" className="win-btn" disabled={busy || !password}>
+            <button type="submit" className="win-btn" disabled={busy || !username || !password}>
               {busy ? "Wait..." : "OK"}
             </button>
             <a href="/" className="win-btn">
