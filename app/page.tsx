@@ -1,5 +1,6 @@
 import { VT323 } from "next/font/google";
 import Phone from "@/components/nokia/Phone";
+import Galaxy from "@/components/nokia/Galaxy";
 import { site } from "@/site.config";
 import { toEmbed } from "@/lib/embed";
 import "./nokia.css";
@@ -12,6 +13,7 @@ export default function Home() {
 
   return (
     <main className={`nk-page ${pixel.variable}`}>
+      <Galaxy />
       <div className="nk-stage">
         <Phone />
         <p className="nk-hint">
