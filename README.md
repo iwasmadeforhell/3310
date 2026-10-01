@@ -7,7 +7,7 @@ One Next.js app on Vercel serving four sites, picked by subdomain:
 | `3310.nz` | Front page styled like an old phone, with a ringtone/MP3 player, Snake and an optional SoundCloud/Spotify/YouTube embed. Also serves short links `3310.nz/s/<code>` and files `3310.nz/f/<id>`. | Everyone |
 | `portfolio.3310.nz` | Private gallery. Work is uploaded at `/manage`. | Portfolio password to view, manage password to upload |
 | `drop.3310.nz` | URL shortener + file host dashboard. Its link preview image is `public/drop-og.png`. | Drop password |
-| `old.3310.nz` | Neocities-style news & updates board. Log in at `/login` to post, edit and delete. | Public to read, admin to post |
+| `old.3310.nz` | Neocities-style forum: an open board, plus a devlog only admins can post in. Anyone can register at `/register`. | Public to read, members to post and vote |
 
 ## How the private parts stay private
 
@@ -52,8 +52,23 @@ Nothing can stop someone who *is* logged in from screenshotting an image. Disabl
 
 - **Music**: edit `site.config.ts`. Put MP3s in `public/music/` and add `{ title, artist, src: "/music/file.mp3" }`. To show an embed under the phone, paste a SoundCloud, Spotify or YouTube link into `embed`. Anything in `public/` is public, so only put music there.
 - **Portfolio**: go to `portfolio.3310.nz/manage` and log in with the manage password.
-- **News post**: go to `old.3310.nz/login`, then use "+ new post". Posts support `**bold**`, `*italic*`, `[link](https://…)`, `![img](https://…)`, `# heading`, `- list` and `> quote`.
+- **Forum post**: go to `old.3310.nz/login` (the owner logs in there too, with `ADMIN_USERNAME` / `ADMIN_PASSWORD`), then use "+ new post". Admins get a "post in" choice between the board and the devlog. Posts support `**bold**`, `*italic*`, `[link](https://…)`, `![img](https://…)`, `# heading`, `- list` and `> quote`.
 - **Short link / file**: go to `drop.3310.nz`. You can drag files anywhere on the page (500 MB max each). Each upload is either a permanent link or deleted after 24 hours, chosen on the Files tab. The same tab has a **videos** switch: "compress to 480p 60fps" re-encodes videos in your browser (H.264 MP4, short side capped at 480 px, frame rate capped at 60) before they upload, which needs Chrome, Edge or another browser with WebCodecs. The bar at the top shows how much of the Blob store is left (1 GB on the Hobby plan; set `BLOB_QUOTA_GB` if that changes).
+
+## Forum accounts and roles (old.3310.nz)
+
+Visitors can read everything. Registering (`/register`) takes a user name, a password and a name colour; the colour can be changed later at `/account`. Pressing like or dislike without an account opens a prompt to register.
+
+| Role | Can do |
+| --- | --- |
+| member | Post on the board, edit and delete their own posts, like and dislike |
+| moderator | Everything a member can, plus delete other people's board posts (not posts by admins, not the devlog) |
+| admin | Post in the devlog, edit or delete any post, change roles and delete accounts at `/users` |
+| owner | The `ADMIN_USERNAME` login from the env vars. An admin that can't be demoted or deleted, and the only one who can make or change other admins |
+
+- Accounts live in Redis with scrypt-hashed passwords. There is no email and no password reset: to help someone who forgot theirs, delete the account at `/users` so they can register again.
+- Roles are read from Redis on every request, so a role change or a deleted account takes effect immediately.
+- Limits: 3 new accounts per hour per IP, 8 failed logins per 15 minutes, 5 posts per 10 minutes for members.
 
 ## Local development
 
@@ -75,7 +90,8 @@ lib/auth.ts            server-side session checks
 app/page.tsx           3310.nz front page        components/nokia/*  phone UI, player, snake
 app/portfolio/*        portfolio.3310.nz
 app/drop/*             drop.3310.nz              app/s, app/f       public short links / files
-app/old/*              old.3310.nz
+app/old/*              old.3310.nz               lib/users.ts       forum accounts, roles, sessions
+                                                 lib/votes.ts       likes / dislikes
 app/api/*              JSON endpoints (all re-check auth)
 ```
 

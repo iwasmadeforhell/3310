@@ -1,12 +1,16 @@
 import { render } from "@/lib/minimark";
-import { fmtDate, type Post } from "@/lib/posts";
+import { authorOf, canDelete, canEdit, fmtDate, sectionOf, type Post, type PostExtras } from "@/lib/posts";
+import type { PublicUser } from "@/lib/users";
 import PostAdmin from "./PostAdmin";
 import UserName from "./UserName";
+import Vote from "./Vote";
 
 const NEW_MS = 1000 * 60 * 60 * 24 * 7;
 
-export default function PostView({ post, isAdmin, full }: { post: Post; isAdmin: boolean; full?: boolean }) {
+export default function PostView({ post, me, extras, full }: { post: Post; me: PublicUser | null; extras: PostExtras; full?: boolean }) {
   const isNew = Date.now() - post.createdAt < NEW_MS;
+  const author = extras.authors[authorOf(post)];
+  const back = sectionOf(post) === "devlog" ? "/devlog" : "/";
   return (
     <article className="old-post">
       <div className="old-post-h">
@@ -17,13 +21,14 @@ export default function PostView({ post, isAdmin, full }: { post: Post; isAdmin:
       <div className="old-post-body" dangerouslySetInnerHTML={{ __html: render(post.body) }} />
       <div className="old-post-f">
         <span>
-          posted by <UserName /> on {fmtDate(post.createdAt)}
+          posted by {author ? <UserName user={author} /> : "?"} on {fmtDate(post.createdAt)}
           {post.updatedAt ? ` (edited ${fmtDate(post.updatedAt)})` : ""}
           {post.mood ? ` · mood: ${post.mood}` : ""}
         </span>
         <span>
+          <Vote id={post.id} initial={extras.votes[post.id] ?? { up: 0, down: 0, mine: 0 }} loggedIn={!!me} />
           {!full && <a href={`/p/${post.id}`}>permalink</a>}
-          {isAdmin && <PostAdmin id={post.id} title={post.title} />}
+          <PostAdmin id={post.id} title={post.title} edit={canEdit(me, post)} del={canDelete(me, post, author)} back={back} />
         </span>
       </div>
     </article>

@@ -38,7 +38,7 @@
 }
 
 .old-wrap {
-  max-width: 820px;
+  max-width: 1240px;
   margin: 0 auto;
 }
 
@@ -114,7 +114,7 @@
 }
 @media (min-width: 720px) {
   .old-cols {
-    grid-template-columns: 190px 1fr;
+    grid-template-columns: 200px 1fr;
     align-items: start;
   }
 }
@@ -596,4 +596,160 @@
   .old-user span {
     animation: none;
   }
+}
+
+/* ───────────── accounts, roles, votes ───────────── */
+/* a member's own colour instead of the owner's gradient */
+.old-user.solid {
+  border-color: var(--c);
+  box-shadow: 0 0 5px color-mix(in srgb, var(--c) 60%, transparent);
+}
+.old-user.solid span {
+  background: none;
+  color: var(--c);
+  animation: none;
+  filter: none;
+}
+.old-rank {
+  display: inline-block;
+  margin-left: 4px;
+  padding: 0 4px;
+  border: 1px solid;
+  font: bold 9px/1.5 Verdana, Geneva, Tahoma, sans-serif;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  vertical-align: 1px;
+}
+.r-owner {
+  color: #fff;
+  background: #b8860b;
+  border-color: #6b4e00;
+}
+.r-admin {
+  color: #fff;
+  background: #c4004f;
+  border-color: #7a0031;
+}
+.r-mod {
+  color: #fff;
+  background: #1a7f37;
+  border-color: #0e4d21;
+}
+.old-gone {
+  font-style: italic;
+  text-decoration: line-through;
+}
+.old-intro {
+  margin: 0 0 12px;
+  font-size: 12px;
+  color: #5b4a6e;
+}
+
+.old-vote {
+  display: inline-flex;
+  gap: 4px;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+.old .old-vote > button {
+  padding: 0 6px;
+  border: 2px outset #eee;
+  background: #d4d0c8;
+  color: #333;
+  font: bold 11px/1.6 Verdana, Geneva, Tahoma, sans-serif;
+  cursor: pointer;
+}
+.old .old-vote > button.on {
+  border-style: inset;
+  color: #fff;
+}
+.old .old-vote > button.up.on {
+  background: #1a7f37;
+}
+.old .old-vote > button.down.on {
+  background: #c4004f;
+}
+.old-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(20, 5, 45, 0.55);
+}
+.old-modal .win {
+  text-align: left;
+}
+.old-modal .win-row p {
+  font-size: 12px;
+  color: #000;
+}
+
+.win.wide {
+  width: min(460px, 100%);
+}
+.win-hint {
+  margin: 0;
+  color: #444;
+  font-size: 11px;
+}
+.win-actions {
+  align-items: center;
+  flex-wrap: wrap;
+}
+.old .win-link {
+  margin-right: auto;
+  font-size: 11px;
+}
+.old-colors {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+.old-swatches {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+.old .old-swatches button {
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 2px outset #eee;
+  cursor: pointer;
+}
+.old .old-swatches button.on {
+  border: 2px solid #000;
+  outline: 2px solid #fff;
+  outline-offset: -4px;
+}
+.old-swatches input[type="color"] {
+  width: 34px;
+  height: 24px;
+  padding: 0;
+  border: 2px inset #ccc;
+  background: #fff;
+  cursor: pointer;
+}
+.old-color-preview {
+  font-size: 12px;
+  font-weight: normal;
+}
+
+.old-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+}
+.old-table th,
+.old-table td {
+  padding: 5px 8px;
+  border: 1px dotted #c9a2ff;
+  text-align: left;
+}
+.old-table th {
+  background: #f3eaff;
+  font-size: 12px;
 }

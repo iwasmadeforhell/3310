@@ -1,4 +1,5 @@
 import { bumpHits, fmtDate, type Post } from "@/lib/posts";
+import { isAdmin, type PublicUser } from "@/lib/users";
 import LogoutButton from "@/components/LogoutButton";
 import UserName from "./UserName";
 
@@ -16,12 +17,13 @@ function Counter({ n }: { n: number }) {
 
 export default async function Shell({
   children,
-  isAdmin,
+  me,
   latest,
   count = true,
 }: {
   children: React.ReactNode;
-  isAdmin: boolean;
+  /** Whoever is logged in, or null for a visitor. */
+  me: PublicUser | null;
   latest?: Post;
   count?: boolean;
 }) {
@@ -36,7 +38,7 @@ export default async function Shell({
         <div className="old-sub">news ✿ updates ✿ random thoughts</div>
         <div className="old-marquee" aria-hidden>
           <span>
-            ★ welcome 2 my lil corner of the web ★ sign in as admin to post ★{" "}
+            ★ welcome 2 my lil corner of the web ★ register 2 post, like &amp; dislike ★{" "}
             {latest ? `latest: “${latest.title}” (${fmtDate(latest.createdAt)})` : "no news yet"} ★ thx for visiting ★
           </span>
         </div>
@@ -50,8 +52,30 @@ export default async function Shell({
               <li><a href="/">» home</a></li>
               <li><a href={`https://${r}`}>» main site</a></li>
               <li><a href={`https://portfolio.${r}`}>» portfolio</a></li>
-              {isAdmin && <li><a href="/new">» new post</a></li>}
+              <li><a href="/devlog">» devlog</a></li>
+              {me && <li><a href="/new">» new post</a></li>}
+              {isAdmin(me) && <li><a href="/users">» members</a></li>}
             </ul>
+          </div>
+
+          <div className="old-box">
+            <div className="old-box-h">{me ? "logged in" : "members"}</div>
+            {me ? (
+              <>
+                <p>
+                  hi <UserName user={me} />
+                </p>
+                <ul className="old-nav">
+                  <li><a href="/account">» my account</a></li>
+                  <li><LogoutButton className="old-linkbtn" label="» log out" next="/" /></li>
+                </ul>
+              </>
+            ) : (
+              <ul className="old-nav">
+                <li><a href="/register">» register</a></li>
+                <li><a href="/login">» log in</a></li>
+              </ul>
+            )}
           </div>
 
           <div className="old-box">
@@ -94,14 +118,16 @@ export default async function Shell({
       <footer className="old-foot">
         <p>© {new Date().getFullYear()} 3310.nz · best viewed at 800×600 · made with ♥ and notepad</p>
         <p className="old-small">
-          {isAdmin ? (
+          {me ? (
             <>
-              logged in as <UserName /> ·<a href="/new">new post</a> · <LogoutButton className="old-linkbtn" label="log out" next="/" />
+              logged in as <UserName user={me} /> · <a href="/new">new post</a> · <LogoutButton className="old-linkbtn" label="log out" next="/" />
             </>
           ) : (
-            <a href="/login">admin login</a>
+            <>
+              <a href="/register">register</a> · <a href="/login">log in</a>
+            </>
           )}
-          {" · "}*except one, for the admin
+          {" · "}*except one, to keep you logged in
         </p>
       </footer>
     </div>

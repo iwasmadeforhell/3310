@@ -43,7 +43,6 @@ export async function proxy(req: NextRequest) {
   }
 
   const cookie = (name: string) => req.cookies.get(name)?.value;
-  const isAdmin = await verifyToken("admin", cookie(COOKIE.admin));
   const isManager = await verifyToken("manage", cookie(COOKIE.manage));
   const toLogin = (extra = "") => {
     const dest = url.clone();
@@ -63,9 +62,7 @@ export async function proxy(req: NextRequest) {
   if (section === "drop" && path !== "/login") {
     if (!(await verifyToken("drop", cookie(COOKIE.drop)))) return toLogin();
   }
-  if (section === "old" && (path.startsWith("/new") || path.startsWith("/edit"))) {
-    if (!isAdmin) return toLogin();
-  }
+  // old.3310.nz is public; its pages check the forum account themselves.
 
   // ---------- rewrite into the section's folder ----------
   const dest = url.clone();

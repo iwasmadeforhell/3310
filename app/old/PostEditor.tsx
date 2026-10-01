@@ -2,14 +2,16 @@
 import { useRef, useState, type FormEvent } from "react";
 import { render } from "@/lib/minimark";
 
-type Init = { id?: string; title: string; body: string; tag: string; mood: string };
+type Init = { id?: string; title: string; body: string; tag: string; mood: string; section: "board" | "devlog" };
 const TAGS = ["news", "update", "random", "music"];
 
-export default function PostEditor({ initial }: { initial: Init }) {
+/** `admin` adds the choice of section; the API checks it again. */
+export default function PostEditor({ initial, admin }: { initial: Init; admin: boolean }) {
   const [title, setTitle] = useState(initial.title);
   const [body, setBody] = useState(initial.body);
   const [tag, setTag] = useState(initial.tag);
   const [mood, setMood] = useState(initial.mood);
+  const [section, setSection] = useState(initial.section);
   const [preview, setPreview] = useState(false);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -35,7 +37,7 @@ export default function PostEditor({ initial }: { initial: Init }) {
     const res = await fetch("/api/old/posts", {
       method: initial.id ? "PUT" : "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: initial.id, title, body, tag, mood }),
+      body: JSON.stringify({ id: initial.id, title, body, tag, mood, section: admin ? section : undefined }),
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
@@ -50,7 +52,7 @@ export default function PostEditor({ initial }: { initial: Init }) {
     <form className="old-editor" onSubmit={save}>
       <div className="old-board-h">
         <span>{initial.id ? "✎ edit post" : "✎ new post"}</span>
-        <a href="/" className="old-btn">
+        <a href={initial.section === "devlog" ? "/devlog" : "/"} className="old-btn">
           cancel
         </a>
       </div>
@@ -58,6 +60,15 @@ export default function PostEditor({ initial }: { initial: Init }) {
         title
         <input value={title} onChange={(e) => setTitle(e.target.value)} maxLength={200} required />
       </label>
+      {admin && (
+        <label>
+          post in
+          <select value={section} onChange={(e) => setSection(e.target.value as Init["section"])}>
+            <option value="board">the board</option>
+            <option value="devlog">devlog (admins only)</option>
+          </select>
+        </label>
+      )}
       <div className="old-editor-row">
         <label>
           category
