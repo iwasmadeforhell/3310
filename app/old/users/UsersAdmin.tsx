@@ -39,6 +39,7 @@ export default function UsersAdmin({ initial, owner }: { initial: PublicUser[]; 
       <table className="old-table">
         <thead>
           <tr>
+            <th>id</th>
             <th>name</th>
             <th>joined</th>
             <th>role</th>
@@ -50,6 +51,7 @@ export default function UsersAdmin({ initial, owner }: { initial: PublicUser[]; 
             const locked = u.role === "admin" && !owner;
             return (
               <tr key={u.id}>
+                <td className="old-uid">{u.num ? `#${u.num}` : ""}</td>
                 <td>
                   <UserName user={u} badge={false} />
                 </td>
@@ -75,7 +77,7 @@ export default function UsersAdmin({ initial, owner }: { initial: PublicUser[]; 
           })}
           {!users.length && (
             <tr>
-              <td colSpan={4} className="old-note">
+              <td colSpan={5} className="old-note">
                 nobody has registered yet
               </td>
             </tr>

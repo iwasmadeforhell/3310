@@ -605,6 +605,7 @@
   .old-blink,
   .old-new,
   .old .old-vote > button.up.on,
+  .r-owner,
   .old-user span {
     animation: none;
   }
@@ -632,10 +633,32 @@
   text-transform: uppercase;
   vertical-align: 1px;
 }
+/* owner: dark blue, glowing, with snow falling through it */
 .r-owner {
-  color: #fff;
-  background: #b8860b;
-  border-color: #6b4e00;
+  color: #eaf5ff;
+  text-shadow: 0 0 4px #9cc8ff, 0 1px 0 #000;
+  border-color: #4f86c6;
+  background-color: #071440;
+  background-image:
+    radial-gradient(1px 1px at 4px 3px, #fff 50%, transparent 55%),
+    radial-gradient(1px 1px at 17px 10px, #fff 50%, transparent 55%),
+    radial-gradient(1.4px 1.4px at 27px 5px, #d6ecff 50%, transparent 55%),
+    radial-gradient(1px 1px at 9px 20px, #fff 50%, transparent 55%),
+    radial-gradient(1.4px 1.4px at 22px 24px, #d6ecff 50%, transparent 55%),
+    linear-gradient(180deg, #0c2468, #040b2a);
+  background-size: 34px 14px, 34px 14px, 34px 14px, 30px 28px, 30px 28px, 100% 100%;
+  box-shadow: 0 0 5px #3d7bff, 0 0 10px rgba(61, 123, 255, 0.55);
+  animation: old-snow 2.4s linear infinite, old-glow 1.8s ease-in-out infinite alternate;
+}
+@keyframes old-snow {
+  to {
+    background-position: 0 28px, 0 28px, 0 28px, 0 28px, 0 28px, 0 0;
+  }
+}
+@keyframes old-glow {
+  to {
+    box-shadow: 0 0 8px #6fa2ff, 0 0 18px rgba(61, 123, 255, 0.9);
+  }
 }
 .r-admin {
   color: #fff;
@@ -906,4 +929,11 @@
 .old.dark .old-msg-h {
   border-color: #5a3d99;
   color: #a999c4;
+}
+
+.old-uid {
+  width: 1%;
+  white-space: nowrap;
+  font-family: "Courier New", monospace;
+  font-weight: bold;
 }

@@ -18,7 +18,7 @@ export default async function Account() {
       </div>
       {me.owner ? (
         <p>
-          you are <UserName user={me} />. the owner account is set up in the site settings, so there is nothing to change here.
+          you are <UserName user={me} />, user <b>#1</b>. the owner account is set up in the site settings, so there is nothing to change here.
         </p>
       ) : (
         <AccountForm me={me} />

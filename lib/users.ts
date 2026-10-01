@@ -16,9 +16,10 @@ import { hasRedis, redis } from "./redis";
 export const ROLES = ["member", "moderator", "admin"] as const;
 export type Role = (typeof ROLES)[number];
 
-type StoredUser = { id: string; name: string; role: Role; color: string; createdAt: number; salt: string; hash: string };
+type StoredUser = { id: string; name: string; role: Role; color: string; createdAt: number; salt: string; hash: string; num?: number };
 /** What pages and API responses are allowed to see: never the password hash. */
-export type PublicUser = { id: string; name: string; role: Role; color: string; createdAt?: number; owner?: boolean; deleted?: boolean };
+/** `num` is the public user ID (#1 is the owner). `id` is the lower-cased name used in URLs and keys. */
+export type PublicUser = { id: string; name: string; role: Role; color: string; num?: number; createdAt?: number; owner?: boolean; deleted?: boolean };
 
 export const USER_COOKIE = "nk_u";
 export const USER_MAX_AGE = 60 * 60 * 24 * 30; // 30 days
@@ -39,7 +40,7 @@ export const isAdmin = (u: PublicUser | null | undefined) => u?.role === "admin"
 export const isStaff = (u: PublicUser | null | undefined) => u?.role === "admin" || u?.role === "moderator";
 
 function owner(): PublicUser {
-  return { id: ownerId(), name: OWNER_NAME, role: "admin", color: "", owner: true };
+  return { id: ownerId(), name: OWNER_NAME, role: "admin", color: "", num: 1, owner: true };
 }
 
 /** Names sit on a dark chip, so very dark colours are refused. */
@@ -64,7 +65,31 @@ function safeEqual(a: string, b: string): boolean {
   return x.length === y.length && timingSafeEqual(x, y);
 }
 
-const toPublic = ({ id, name, role, color, createdAt }: StoredUser): PublicUser => ({ id, name, role, color, createdAt });
+const toPublic = ({ id, name, role, color, createdAt, num }: StoredUser): PublicUser => ({ id, name, role, color, createdAt, num });
+
+// ---------- user IDs ----------
+// The owner is #1. Everyone else gets the next number when they register, and
+// a number is never reused after an account is deleted.
+const USER_SEQ = "us:seq";
+const IDS_DONE = "us:ids-done";
+let idsDone = false;
+
+const nextNum = async () => (await redis().incr(USER_SEQ)) + 1;
+
+/** One-time backfill: accounts made before IDs existed get theirs in join order. */
+async function ensureIds() {
+  if (idsDone || !hasRedis()) return;
+  const r = redis();
+  if (await r.get(IDS_DONE)) return void (idsDone = true);
+  // Only one request does the backfill; the others carry on and pick the IDs up later.
+  if ((await r.set("us:ids-lock", 1, { nx: true, ex: 30 })) !== "OK") return;
+  const ids = await r.zrange<string[]>(USER_INDEX, 0, -1);
+  const docs = ids.length ? await r.mget<(StoredUser | null)[]>(...ids.map(userKey)) : [];
+  const missing = docs.filter((d): d is StoredUser => d !== null && !d.num).sort((a, b) => a.createdAt - b.createdAt);
+  for (const u of missing) await r.set(userKey(u.id), { ...u, num: await nextNum() });
+  await r.set(IDS_DONE, 1);
+  idsDone = true;
+}
 
 export async function getUser(id: string): Promise<PublicUser | null> {
   if (!hasRedis() || !/^[a-z0-9_-]{3,20}$/.test(id)) return null;
@@ -74,6 +99,7 @@ export async function getUser(id: string): Promise<PublicUser | null> {
 
 export async function listUsers(): Promise<PublicUser[]> {
   if (!hasRedis()) return [];
+  await ensureIds();
   const r = redis();
   const ids = await r.zrange<string[]>(USER_INDEX, 0, 999, { rev: true });
   if (!ids.length) return [];
@@ -109,9 +135,11 @@ export async function createUser(name: string, password: string, color: string):
   if (problem) return { error: problem };
   const id = name.toLowerCase();
 
-  const salt = randomBytes(16).toString("base64url");
-  const user: StoredUser = { id, name, role: "member", color: color.toLowerCase(), createdAt: Date.now(), salt, hash: await hashPassword(password, salt) };
   const r = redis();
+  if (await r.get(userKey(id))) return { error: "That user name is taken." };
+  await ensureIds(); // older accounts get their numbers before this one does
+  const salt = randomBytes(16).toString("base64url");
+  const user: StoredUser = { id, name, role: "member", color: color.toLowerCase(), createdAt: Date.now(), salt, hash: await hashPassword(password, salt), num: await nextNum() };
   // nx: only succeeds if the name is still free, so two sign-ups can't share it.
   const created = await r.set(userKey(id), user, { nx: true });
   if (created !== "OK") return { error: "That user name is taken." };

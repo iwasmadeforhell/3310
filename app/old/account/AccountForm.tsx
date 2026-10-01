@@ -25,7 +25,7 @@ export default function AccountForm({ me }: { me: PublicUser }) {
   return (
     <div className="old-editor">
       <p>
-        user name: <b>{me.name}</b> · role: <b>{me.role}</b>
+        user name: <b>{me.name}</b> · user id: <b>{me.num ? `#${me.num}` : "?"}</b> · role: <b>{me.role}</b>
       </p>
       <label>name colour</label>
       <ColorPicker name={me.name} color={color} onChange={setColor} />

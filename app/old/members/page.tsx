@@ -33,6 +33,7 @@ export default async function Members() {
       <table className="old-table">
         <thead>
           <tr>
+            <th>id</th>
             <th>name</th>
             <th>joined</th>
             <th>posts</th>
@@ -42,6 +43,7 @@ export default async function Members() {
         <tbody>
           {all.map((u) => (
             <tr key={u.id}>
+              <td className="old-uid">{u.num ? `#${u.num}` : ""}</td>
               <td>
                 <UserName user={u} />
               </td>
