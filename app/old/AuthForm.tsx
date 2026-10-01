@@ -51,11 +51,11 @@ export default function AuthForm({ mode }: { mode: "login" | "register" }) {
             <p>
               {register ? (
                 <>
-                  Make an account on <b>old.3310.nz</b> to post on the board and to like or dislike posts.
+                  Make an account on <b>forum.3310.nz</b> to post on the board and to like or dislike posts.
                 </>
               ) : (
                 <>
-                  Type your user name and password to log in to <b>old.3310.nz</b>.
+                  Type your user name and password to log in to <b>forum.3310.nz</b>.
                 </>
               )}
             </p>

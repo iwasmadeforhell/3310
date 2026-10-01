@@ -3,7 +3,7 @@
 //   3310.nz            -> app/page.tsx, /s/<code>, /f/<id>
 //   portfolio.3310.nz  -> app/portfolio/*
 //   drop.3310.nz       -> app/drop/*
-//   old.3310.nz        -> app/old/*
+//   forum.3310.nz      -> app/old/*   (old.3310.nz redirects here)
 //
 // The auth redirects here are only for convenience. Every protected page and
 // API route re-checks the signed cookie on the server itself, so nothing is
@@ -11,7 +11,7 @@
 
 import { NextResponse, type NextRequest } from "next/server";
 import { COOKIE, verifyToken } from "./lib/session";
-import { SECTIONS, sectionForHost } from "./lib/hosts";
+import { FOLDER, MOVED, SECTIONS, movedSectionForHost, sectionForHost } from "./lib/hosts";
 
 const ROOT = process.env.ROOT_DOMAIN ?? "3310.nz";
 
@@ -27,12 +27,19 @@ export async function proxy(req: NextRequest) {
     path.startsWith("/_next/") ||
     /\.[a-z0-9]{2,5}$/i.test(path);
 
+  // ---------- moved subdomains (old.3310.nz -> forum.3310.nz) ----------
+  const moved = movedSectionForHost(host);
+  if (moved && host.endsWith(ROOT)) {
+    return NextResponse.redirect(new URL(`https://${moved}.${ROOT}${path}${url.search}`), 308);
+  }
+
   // ---------- main domain ----------
   if (!section) {
     // Keep section pages on their own subdomains (cookies are per-subdomain).
     const first = path.split("/")[1];
-    if ((SECTIONS as readonly string[]).includes(first) && host.endsWith(ROOT)) {
-      const dest = new URL(`https://${first}.${ROOT}${path.slice(first.length + 1) || "/"}`);
+    const target = (SECTIONS as readonly string[]).includes(first) ? first : MOVED[first];
+    if (target && host.endsWith(ROOT)) {
+      const dest = new URL(`https://${target}.${ROOT}${path.slice(first.length + 1) || "/"}`);
       return NextResponse.redirect(dest, 308);
     }
     return NextResponse.next();
@@ -62,13 +69,13 @@ export async function proxy(req: NextRequest) {
   if (section === "drop" && path !== "/login") {
     if (!(await verifyToken("drop", cookie(COOKIE.drop)))) return toLogin();
   }
-  // old.3310.nz is public; its pages check the forum account themselves.
+  // forum.3310.nz is public; its pages check the forum account themselves.
 
   // ---------- rewrite into the section's folder ----------
   const dest = url.clone();
-  dest.pathname = `/${section}${path === "/" ? "" : path}`;
+  dest.pathname = `/${FOLDER[section]}${path === "/" ? "" : path}`;
   const res = NextResponse.rewrite(dest);
-  if (section !== "old") {
+  if (section !== "forum") {
     res.headers.set("X-Robots-Tag", "noindex, nofollow");
     res.headers.set("Cache-Control", "private, no-store");
   }

@@ -1,4 +1,4 @@
-// Register and log in on old.3310.nz. The owner logs in through the same form:
+// Register and log in on forum.3310.nz. The owner logs in through the same form:
 // if the user name is the admin user name, the ADMIN_PASSWORD check is used.
 import { NextResponse } from "next/server";
 import { COOKIE, MAX_AGE, checkPassword, checkUsername, createToken, isConfigured } from "@/lib/session";

@@ -1,4 +1,4 @@
-// Forum accounts for old.3310.nz.
+// Forum accounts for forum.3310.nz.
 //
 // Registered users live in Redis (`us:<id>`, id = lower-cased name). The owner
 // is not stored there: it is the ADMIN_USERNAME / ADMIN_PASSWORD login from the

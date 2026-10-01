@@ -7,7 +7,7 @@ One Next.js app on Vercel serving four sites, picked by subdomain:
 | `3310.nz` | Front page styled like an old phone, with a ringtone/MP3 player, Snake and an optional SoundCloud/Spotify/YouTube embed. Also serves short links `3310.nz/s/<code>` and files `3310.nz/f/<id>`. | Everyone |
 | `portfolio.3310.nz` | Private gallery. Work is uploaded at `/manage`. | Portfolio password to view, manage password to upload |
 | `drop.3310.nz` | URL shortener + file host dashboard. Its link preview image is `public/drop-og.png`. | Drop password |
-| `old.3310.nz` | Neocities-style forum: an open board, plus a devlog only admins can post in. Anyone can register at `/register`. | Public to read, members to post and vote |
+| `forum.3310.nz` | Neocities-style forum: an open board, plus a devlog only admins can post in. Anyone can register at `/register`. | Public to read, members to post and vote |
 
 ## How the private parts stay private
 
@@ -33,8 +33,8 @@ Nothing can stop someone who *is* logged in from screenshotting an image. Disabl
    - `PORTFOLIO_MANAGE_PASSWORD`
    - `DROP_PASSWORD`
    - `CRON_SECRET`: any random string. Lets the daily cron in `vercel.json` delete expired drop files.
-   - `ADMIN_PASSWORD` for old.3310.nz (the admin username is `nokia`; set `ADMIN_USERNAME` to change it)
-5. **Settings → Domains**: add `3310.nz`, `www.3310.nz`, `portfolio.3310.nz`, `drop.3310.nz` and `old.3310.nz`.
+   - `ADMIN_PASSWORD` for forum.3310.nz (the admin username is `nokia`; set `ADMIN_USERNAME` to change it)
+5. **Settings → Domains**: add `3310.nz`, `www.3310.nz`, `portfolio.3310.nz`, `drop.3310.nz`, `forum.3310.nz` and `old.3310.nz` (the forum's previous address, which redirects to `forum.3310.nz`).
 6. **Cloudflare DNS** (leave the Proton Mail MX/TXT/DKIM records alone):
 
    | Type | Name | Target | Proxy |
@@ -43,6 +43,7 @@ Nothing can stop someone who *is* logged in from screenshotting an image. Disabl
    | CNAME | `www` | `cname.vercel-dns.com` | DNS only |
    | CNAME | `portfolio` | `cname.vercel-dns.com` | DNS only |
    | CNAME | `drop` | `cname.vercel-dns.com` | DNS only |
+   | CNAME | `forum` | `cname.vercel-dns.com` | DNS only |
    | CNAME | `old` | `cname.vercel-dns.com` | DNS only |
 
    If Vercel's domain page shows different values, use the ones it shows.
@@ -52,10 +53,10 @@ Nothing can stop someone who *is* logged in from screenshotting an image. Disabl
 
 - **Music**: edit `site.config.ts`. Put MP3s in `public/music/` and add `{ title, artist, src: "/music/file.mp3" }`. To show an embed under the phone, paste a SoundCloud, Spotify or YouTube link into `embed`. Anything in `public/` is public, so only put music there.
 - **Portfolio**: go to `portfolio.3310.nz/manage` and log in with the manage password.
-- **Forum post**: go to `old.3310.nz/login` (the owner logs in there too, with `ADMIN_USERNAME` / `ADMIN_PASSWORD`), then use "+ new post". Admins get a "post in" choice between the board and the devlog. Posts support `**bold**`, `*italic*`, `[link](https://…)`, `![img](https://…)`, `# heading`, `- list` and `> quote`.
+- **Forum post**: go to `forum.3310.nz/login` (the owner logs in there too, with `ADMIN_USERNAME` / `ADMIN_PASSWORD`), then use "+ new post". Admins get a "post in" choice between the board and the devlog. Posts support `**bold**`, `*italic*`, `[link](https://…)`, `![img](https://…)`, `# heading`, `- list` and `> quote`.
 - **Short link / file**: go to `drop.3310.nz`. You can drag files anywhere on the page (500 MB max each). Each upload is either a permanent link or deleted after 24 hours, chosen on the Files tab. The same tab has a **videos** switch: "compress to 480p 60fps" re-encodes videos in your browser (H.264 MP4, short side capped at 480 px, frame rate capped at 60) before they upload, which needs Chrome, Edge or another browser with WebCodecs. The bar at the top shows how much of the Blob store is left (1 GB on the Hobby plan; set `BLOB_QUOTA_GB` if that changes).
 
-## Forum accounts and roles (old.3310.nz)
+## Forum accounts and roles (forum.3310.nz)
 
 Visitors can read everything. Registering (`/register`) takes a user name, a password and a name colour; the colour can be changed later at `/account`. Pressing like or dislike without an account opens a prompt to register.
 
@@ -78,7 +79,7 @@ cp .env.example .env.local   # fill in passwords + Redis/Blob tokens (vercel env
 npm run dev
 ```
 
-Then open `http://localhost:3000`, `http://portfolio.localhost:3000`, `http://drop.localhost:3000` and `http://old.localhost:3000`. Browsers resolve `*.localhost` automatically.
+Then open `http://localhost:3000`, `http://portfolio.localhost:3000`, `http://drop.localhost:3000` and `http://forum.localhost:3000`. Browsers resolve `*.localhost` automatically.
 
 ## Files
 
@@ -90,7 +91,7 @@ lib/auth.ts            server-side session checks
 app/page.tsx           3310.nz front page        components/nokia/*  phone UI, player, snake
 app/portfolio/*        portfolio.3310.nz
 app/drop/*             drop.3310.nz              app/s, app/f       public short links / files
-app/old/*              old.3310.nz               lib/users.ts       forum accounts, roles, sessions
+app/old/*              forum.3310.nz               lib/users.ts       forum accounts, roles, sessions
                                                  lib/votes.ts       likes / dislikes
 app/api/*              JSON endpoints (all re-check auth)
 ```

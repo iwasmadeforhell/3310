@@ -6,12 +6,12 @@ import { Player, keyBeep } from "./player";
 import Snake, { type PadHandler, type PadKey } from "./Snake";
 
 type Screen = "idle" | "menu" | "music" | "snake" | "connecting";
-type MenuItem = { label: string; icon: string; go?: "portfolio" | "drop" | "old"; screen?: Screen };
+type MenuItem = { label: string; icon: string; go?: "portfolio" | "drop" | "forum"; screen?: Screen };
 
 const MENU: MenuItem[] = [
   { label: "Portfolio", icon: "▣", go: "portfolio" },
   { label: "Files", icon: "⇪", go: "drop" },
-  { label: "Old site", icon: "☏", go: "old" },
+  { label: "Forum", icon: "☏", go: "forum" },
   { label: "Music", icon: "♪", screen: "music" },
   { label: "Snake", icon: "§", screen: "snake" },
 ];
