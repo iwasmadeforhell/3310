@@ -1,4 +1,5 @@
 "use client";
+import Image from "next/image";
 import { useCallback, useEffect, useReducer, useRef, useState } from "react";
 import { site } from "@/site.config";
 import { Player, keyBeep } from "./player";
@@ -28,11 +29,12 @@ function fmt(sec: number) {
   return `${m}:${String(s).padStart(2, "0")}`;
 }
 
-const KEYPAD: [string, string][] = [
-  ["1", "◌"], ["2", "abc"], ["3", "def"],
-  ["4", "ghi"], ["5", "jkl"], ["6", "mno"],
-  ["7", "pqrs"], ["8", "tuv"], ["9", "wxyz"],
-  ["*", "+"], ["0", "␣"], ["#", "⇧"],
+// [key, left %, top %] of each key on public/nokia.png
+const KEYPAD: [string, number, number][] = [
+  ["1", 12.5, 65.5], ["2", 40.4, 66.8], ["3", 68.7, 65.0],
+  ["4", 13.6, 72.5], ["5", 40.4, 73.8], ["6", 67.7, 72.0],
+  ["7", 14.4, 79.8], ["8", 40.4, 80.8], ["9", 66.6, 79.2],
+  ["*", 15.6, 86.8], ["0", 40.4, 87.8], ["#", 65.7, 86.2],
 ];
 const KEYPAD_MAP: Record<string, PadKey> = { "2": "up", "8": "down", "4": "left", "6": "right", "5": "select" };
 
@@ -140,12 +142,9 @@ export default function Phone() {
 
   return (
     <div className="nk-phone" aria-label="3310.nz phone">
-      <div className="nk-speaker" aria-hidden>
-        <span /><span /><span /><span /><span />
-      </div>
-      <div className="nk-brand">{site.name}</div>
+      <Image className="nk-photo" src="/nokia.png" alt="Nokia 3310" width={720} height={1641} priority draggable={false} />
 
-      <div className="nk-bezel">
+      <div className="nk-screen">
         <div className="nk-lcd" role="application" aria-label="Phone screen">
           <div className="nk-status">
             <span className="nk-signal" aria-hidden><i /><i /><i /><i /></span>
@@ -230,33 +229,20 @@ export default function Phone() {
         </div>
       </div>
 
-      <div className="nk-controls">
-        <button className={`nk-c ${pressed === "back" ? "down" : ""}`} onClick={() => press("back")} aria-label="Back">
-          C
-        </button>
-        <button className={`nk-navi ${pressed === "select" ? "down" : ""}`} onClick={() => press("select")} aria-label={softkey || "Select"}>
-          <span />
-        </button>
-        <div className="nk-rocker">
-          <button className={pressed === "up" ? "down" : ""} onClick={() => press("up")} aria-label="Up">▲</button>
-          <button className={pressed === "down" ? "down" : ""} onClick={() => press("down")} aria-label="Down">▼</button>
-        </div>
-      </div>
+      <button className={`nk-c ${pressed === "back" ? "down" : ""}`} onClick={() => press("back")} aria-label="Back" />
+      <button className={`nk-navi ${pressed === "select" ? "down" : ""}`} onClick={() => press("select")} aria-label={softkey || "Select"} />
+      <button className={`nk-up ${pressed === "up" ? "down" : ""}`} onClick={() => press("up")} aria-label="Up" />
+      <button className={`nk-down ${pressed === "down" ? "down" : ""}`} onClick={() => press("down")} aria-label="Down" />
 
-      <div className="nk-keypad">
-        {KEYPAD.map(([n, l]) => (
-          <button
-            key={n}
-            className={KEYPAD_MAP[n] && pressed === KEYPAD_MAP[n] ? "down" : ""}
-            onClick={() => (KEYPAD_MAP[n] ? press(KEYPAD_MAP[n]) : keyBeep(1200))}
-            aria-label={n}
-          >
-            <b>{n}</b>
-            <small>{l}</small>
-          </button>
-        ))}
-      </div>
-      <div className="nk-mic" aria-hidden />
+      {KEYPAD.map(([n, left, top]) => (
+        <button
+          key={n}
+          className={`nk-key ${KEYPAD_MAP[n] && pressed === KEYPAD_MAP[n] ? "down" : ""}`}
+          style={{ left: `${left}%`, top: `${top}%` }}
+          onClick={() => (KEYPAD_MAP[n] ? press(KEYPAD_MAP[n]) : keyBeep(1200))}
+          aria-label={n}
+        />
+      ))}
     </div>
   );
 }

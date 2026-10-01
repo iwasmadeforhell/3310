@@ -44,6 +44,10 @@ export default function Home() {
         <span>·</span>
         <a href={`https://old.${root}`}>old</a>
       </nav>
+      <p className="nk-credit">
+        phone photo: <a href="https://commons.wikimedia.org/wiki/File:Nokia_3310_Blue_R7309170_(retouch).png">smial</a>,{" "}
+        <a href="https://artlibre.org/licence/lal/en/">Free Art License</a>
+      </p>
     </main>
   );
 }

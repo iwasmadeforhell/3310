@@ -1,12 +1,8 @@
 /* ───────────── 3310.nz front page ───────────── */
 .nk-page {
-  --navy-1: #2f5f9e;
-  --navy-2: #1c3b6b;
-  --navy-3: #10264a;
   --lcd-1: #c4dc8c;
   --lcd-2: #93b35c;
   --ink: #1b2a10;
-  --silver: #c9d1db;
   min-height: 100vh;
   min-height: 100dvh;
   display: flex;
@@ -46,63 +42,56 @@
 /* ── phone body ── */
 .nk-phone {
   position: relative;
-  width: min(300px, 92vw);
-  padding: 22px 20px 26px;
-  border-radius: 46% 46% 38% 38% / 14% 14% 10% 10%;
-  background:
-    radial-gradient(120% 60% at 30% 0%, rgba(255, 255, 255, 0.25), transparent 50%),
-    linear-gradient(165deg, var(--navy-1) 0%, var(--navy-2) 50%, var(--navy-3) 100%);
-  box-shadow:
-    inset 0 2px 1px rgba(255, 255, 255, 0.35),
-    inset 0 -10px 24px rgba(0, 0, 0, 0.45),
-    inset 6px 0 14px rgba(255, 255, 255, 0.06),
-    0 40px 80px -20px rgba(0, 0, 0, 0.75),
-    0 0 0 1px rgba(0, 0, 0, 0.4),
-    0 0 60px rgba(90, 130, 230, 0.25);
+  /* the LCD is laid out at 360px and scaled by --k on narrower phones */
+  --k: 1;
+  width: 360px;
+  aspect-ratio: 720 / 1641;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
 }
-
-.nk-speaker {
-  display: flex;
-  justify-content: center;
-  gap: 5px;
-  margin: 4px 0 10px;
+@media (max-width: 400px) {
+  .nk-phone {
+    --k: 0.8333;
+    width: 300px;
+  }
 }
-.nk-speaker span {
-  width: 18px;
-  height: 4px;
-  border-radius: 4px;
-  background: #091830;
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.8), 0 1px 0 rgba(255, 255, 255, 0.15);
+@media (max-width: 330px) {
+  .nk-phone {
+    --k: 0.7222;
+    width: 260px;
+  }
 }
 
-.nk-brand {
-  text-align: center;
-  font-family: ui-sans-serif, "Arial Black", system-ui, sans-serif;
-  font-weight: 900;
-  letter-spacing: 0.22em;
-  font-size: 13px;
-  color: var(--silver);
-  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.5);
-  margin-bottom: 12px;
+.nk-photo {
+  display: block;
+  width: 100%;
+  height: auto;
+  pointer-events: none;
+  filter: drop-shadow(0 30px 40px rgba(0, 0, 0, 0.7)) drop-shadow(0 0 40px rgba(90, 130, 230, 0.2));
 }
 
-/* ── screen ── */
-.nk-bezel {
-  padding: 14px 14px 18px;
-  border-radius: 14px 14px 34px 34px;
-  background: linear-gradient(180deg, #3a4048, #24282e);
-  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.7), 0 1px 0 rgba(255, 255, 255, 0.2);
+/* ── screen: sits over the photo's own LCD (all offsets are % of the photo) ── */
+.nk-screen {
+  position: absolute;
+  left: 16.24%;
+  top: 26.76%;
+  width: 68.04%;
+  height: 20.83%;
+  /* the photographed screen is slightly narrower at the bottom */
+  clip-path: polygon(1.5% 0, 98.5% 0, 100% 2.5%, 97.8% 98%, 96.5% 100%, 4.5% 100%, 3% 98%, 0 2.5%);
+  background: var(--lcd-2);
+  overflow: hidden;
 }
 
 .nk-lcd {
   position: relative;
-  height: 168px;
+  width: 245px;
+  height: 171px;
+  transform: scale(var(--k));
+  transform-origin: 0 0;
   display: flex;
   flex-direction: column;
-  padding: 6px 8px 4px;
-  border-radius: 4px;
+  padding: 6px 14px 6px;
   color: var(--ink);
   font-size: 21px;
   line-height: 1;
@@ -331,107 +320,30 @@
   }
 }
 
-/* ── controls ── */
+/* ── controls: invisible hit areas over the photographed keys ── */
 .nk-phone button {
+  position: absolute;
+  padding: 0;
   cursor: pointer;
   border: 0;
-  color: #1c2533;
-  font-family: ui-sans-serif, system-ui, sans-serif;
-  transition: transform 0.06s, filter 0.06s;
+  border-radius: 50%;
+  background: transparent;
+  transition: background 0.06s;
 }
 .nk-phone button:active,
 .nk-phone button.down {
-  transform: translateY(1px) scale(0.97);
-  filter: brightness(0.88);
+  background: rgba(0, 0, 0, 0.25);
 }
 .nk-phone button:focus-visible {
   outline: 2px solid var(--lcd-1);
   outline-offset: 2px;
 }
 
-.nk-controls {
-  display: grid;
-  grid-template-columns: 52px 1fr 52px;
-  align-items: center;
-  gap: 10px;
-  margin: 18px 4px 14px;
-}
-.nk-c {
-  width: 46px;
-  height: 34px;
-  border-radius: 40% 60% 60% 40% / 50%;
-  font-weight: 800;
-  font-size: 15px;
-  background: linear-gradient(180deg, #e7ecf2, #aab4c1);
-  box-shadow: 0 3px 0 #6b7787, 0 4px 8px rgba(0, 0, 0, 0.4);
-}
-.nk-navi {
-  height: 46px;
-  border-radius: 50% / 60%;
-  background: linear-gradient(180deg, #edf1f6, #b3bdca);
-  box-shadow: 0 4px 0 #6b7787, 0 6px 12px rgba(0, 0, 0, 0.45), inset 0 1px 0 #fff;
-  display: grid;
-  place-items: center;
-}
-.nk-navi span {
-  width: 36px;
-  height: 6px;
-  border-radius: 6px;
-  background: #3a5a8c;
-  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.5);
-}
-.nk-rocker {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-.nk-rocker button {
-  height: 20px;
-  font-size: 10px;
-  background: linear-gradient(180deg, #e7ecf2, #aab4c1);
-  box-shadow: 0 2px 0 #6b7787;
-}
-.nk-rocker button:first-child {
-  border-radius: 14px 14px 4px 4px;
-}
-.nk-rocker button:last-child {
-  border-radius: 4px 4px 14px 14px;
-}
-
-.nk-keypad {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 9px 12px;
-  padding: 0 6px;
-}
-.nk-keypad button {
-  height: 34px;
-  border-radius: 45% / 55%;
-  background: linear-gradient(180deg, #dbe2ea, #9eaaba);
-  box-shadow: 0 3px 0 #5f6b7b, 0 4px 6px rgba(0, 0, 0, 0.35);
-  display: flex;
-  align-items: baseline;
-  justify-content: center;
-  gap: 4px;
-  padding-top: 6px;
-}
-.nk-keypad b {
-  font-size: 16px;
-}
-.nk-keypad small {
-  font-size: 9px;
-  letter-spacing: 0.04em;
-  opacity: 0.75;
-}
-
-.nk-mic {
-  width: 30px;
-  height: 4px;
-  margin: 16px auto 0;
-  border-radius: 4px;
-  background: #091830;
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.8);
-}
+.nk-navi { left: 31.3%; top: 51.7%; width: 38.2%; height: 4.6%; }
+.nk-c { left: 17%; top: 54.2%; width: 17.8%; height: 7.3%; }
+.nk-up { left: 70.6%; top: 54.5%; width: 13.7%; height: 5.5%; }
+.nk-down { left: 56.4%; top: 57.5%; width: 14.2%; height: 7%; }
+.nk-key { width: 19.4%; height: 5%; }
 
 .nk-hint {
   margin: 0;
@@ -506,6 +418,15 @@
 }
 .nk-links a:hover {
   color: var(--lcd-1);
+}
+
+.nk-credit {
+  margin: -16px 0 0;
+  font-size: 14px;
+  color: #4d6488;
+}
+.nk-credit a {
+  color: inherit;
 }
 
 @media (prefers-reduced-motion: reduce) {

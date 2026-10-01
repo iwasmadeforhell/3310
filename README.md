@@ -76,3 +76,7 @@ app/drop/*             drop.3310.nz              app/s, app/f       public short
 app/old/*              old.3310.nz
 app/api/*              JSON endpoints (all re-check auth)
 ```
+
+## Credits
+
+`public/nokia.png` is a resized copy of [Nokia 3310 Blue R7309170 (retouch).png](https://commons.wikimedia.org/wiki/File:Nokia_3310_Blue_R7309170_(retouch).png) by smial on Wikimedia Commons, under the [Free Art License](https://artlibre.org/licence/lal/en/). The credit line on the front page has to stay while that image is used. The screen and key positions in `app/nokia.css` and `components/nokia/Phone.tsx` are percentages of that photo, so they need re-measuring if the image is swapped.
