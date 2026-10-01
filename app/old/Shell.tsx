@@ -99,6 +99,10 @@ export default async function Shell({
             <span className="b88 b-d">♥ HTML</span>
             <span className="b88 b-e">NO COOKIES*</span>
             <span className="b88 b-f">GREEN LCD</span>
+            <a className="b88-link" href="https://lucida.to" target="_blank" rel="noopener noreferrer" title="lucida.to">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/buttons/lucida.gif" width={88} height={31} alt="lucida" />
+            </a>
           </div>
 
           <div className="old-box">
