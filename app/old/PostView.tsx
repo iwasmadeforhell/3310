@@ -1,6 +1,7 @@
 import { render } from "@/lib/minimark";
 import { authorOf, canDelete, canEdit, fmtDate, sectionOf, type Post, type PostExtras } from "@/lib/posts";
 import type { PublicUser } from "@/lib/users";
+import Avatar from "./Avatar";
 import PostAdmin from "./PostAdmin";
 import UserName from "./UserName";
 import Vote from "./Vote";
@@ -14,6 +15,11 @@ export default function PostView({ post, me, extras, full }: { post: Post; me: P
   return (
     <article className="old-post">
       <div className="old-post-h">
+        {author && (
+          <a className="old-userlink" href={author.deleted ? undefined : `/u/${author.id}`} aria-label={`${author.name}'s profile`}>
+            <Avatar user={author} size={36} />
+          </a>
+        )}
         <span className={`old-tag t-${post.tag}`}>[{post.tag}]</span>
         {full ? <h2>{post.title}</h2> : <a href={`/p/${post.id}`}><h2>{post.title}</h2></a>}
         {isNew && <span className="old-new">NEW!</span>}

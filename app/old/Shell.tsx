@@ -77,6 +77,7 @@ export default async function Shell({
                       » messages{unread ? ` (${unread} new)` : ""}
                     </a>
                   </li>
+                  <li><a href={`/u/${me.id}`}>» my profile</a></li>
                   <li><a href="/account">» my account</a></li>
                   <li><LogoutButton className="old-linkbtn" label="» log out" next="/" /></li>
                 </ul>

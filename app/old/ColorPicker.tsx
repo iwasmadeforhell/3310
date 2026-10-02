@@ -23,7 +23,7 @@ export default function ColorPicker({ name, color, onChange }: { name: string; c
         <input type="color" value={color} onChange={(e) => onChange(e.target.value)} aria-label="Custom colour" title="custom colour" />
       </div>
       <div className="old-color-preview">
-        preview: <UserName user={{ name: name || "your_name", role: "member", color }} />
+        preview: <UserName user={{ name: name || "your_name", role: "member", color }} link={false} />
       </div>
     </div>
   );

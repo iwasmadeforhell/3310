@@ -16,10 +16,11 @@ import { hasRedis, redis } from "./redis";
 export const ROLES = ["member", "moderator", "admin"] as const;
 export type Role = (typeof ROLES)[number];
 
-type StoredUser = { id: string; name: string; role: Role; color: string; createdAt: number; salt: string; hash: string; num?: number };
+type StoredUser = { id: string; name: string; role: Role; color: string; createdAt: number; salt: string; hash: string; num?: number; avatar?: number; bio?: string };
 /** What pages and API responses are allowed to see: never the password hash. */
 /** `num` is the public user ID (#1 is the owner). `id` is the lower-cased name used in URLs and keys. */
-export type PublicUser = { id: string; name: string; role: Role; color: string; num?: number; createdAt?: number; owner?: boolean; deleted?: boolean };
+/** `avatar` is the time the profile picture was last set (used as its cache version); unset = no picture. */
+export type PublicUser = { id: string; name: string; role: Role; color: string; num?: number; avatar?: number; bio?: string; createdAt?: number; owner?: boolean; deleted?: boolean };
 
 export const USER_COOKIE = "nk_u";
 export const USER_MAX_AGE = 60 * 60 * 24 * 30; // 30 days
@@ -39,8 +40,13 @@ export function ownerId(): string {
 export const isAdmin = (u: PublicUser | null | undefined) => u?.role === "admin";
 export const isStaff = (u: PublicUser | null | undefined) => u?.role === "admin" || u?.role === "moderator";
 
-function owner(): PublicUser {
-  return { id: ownerId(), name: OWNER_NAME, role: "admin", color: "", num: 1, owner: true };
+// The owner's account is the env-var login, but its picture and bio are stored here.
+const OWNER_PROFILE = "us:owner-profile";
+type Profile = { avatar?: number; bio?: string };
+
+async function owner(): Promise<PublicUser> {
+  const profile = hasRedis() ? await redis().get<Profile>(OWNER_PROFILE) : null;
+  return { id: ownerId(), name: OWNER_NAME, role: "admin", color: "", num: 1, owner: true, avatar: profile?.avatar, bio: profile?.bio };
 }
 
 /** Names sit on a dark chip, so very dark colours are refused. */
@@ -65,7 +71,7 @@ function safeEqual(a: string, b: string): boolean {
   return x.length === y.length && timingSafeEqual(x, y);
 }
 
-const toPublic = ({ id, name, role, color, createdAt, num }: StoredUser): PublicUser => ({ id, name, role, color, createdAt, num });
+const toPublic = ({ id, name, role, color, createdAt, num, avatar, bio }: StoredUser): PublicUser => ({ id, name, role, color, createdAt, num, avatar, bio });
 
 // ---------- user IDs ----------
 // The owner is #1. Everyone else gets the next number when they register, and
@@ -109,7 +115,7 @@ export async function listUsers(): Promise<PublicUser[]> {
 
 /** Look up several authors at once. The owner and deleted accounts are filled in too. */
 export async function usersById(ids: string[], fallbackNames: Record<string, string> = {}): Promise<Record<string, PublicUser>> {
-  const out: Record<string, PublicUser> = { [ownerId()]: owner() };
+  const out: Record<string, PublicUser> = { [ownerId()]: await owner() };
   const wanted = [...new Set(ids)].filter((id) => id !== ownerId());
   if (!wanted.length || !hasRedis()) return out;
   const docs = await redis().mget<(StoredUser | null)[]>(...wanted.map(userKey));
@@ -157,7 +163,7 @@ export async function checkUserPassword(name: string, password: string): Promise
   return u && safeEqual(hash, u.hash) ? toPublic(u) : null;
 }
 
-async function patchUser(id: string, patch: Partial<Pick<StoredUser, "role" | "color">>): Promise<PublicUser | null> {
+async function patchUser(id: string, patch: Partial<Pick<StoredUser, "role" | "color" | "avatar" | "bio">>): Promise<PublicUser | null> {
   const r = redis();
   const u = await r.get<StoredUser>(userKey(id));
   if (!u) return null;
@@ -167,6 +173,22 @@ async function patchUser(id: string, patch: Partial<Pick<StoredUser, "role" | "c
 }
 export const setRole = (id: string, role: Role) => patchUser(id, { role });
 export const setColor = (id: string, color: string) => patchUser(id, { color: color.toLowerCase() });
+
+/** A member's public profile: works for the owner as well as registered accounts. */
+export async function getProfile(id: string): Promise<PublicUser | null> {
+  return id === ownerId() ? owner() : getUser(id);
+}
+
+/** Set the profile picture version (null = no picture) and/or the bio. */
+export async function setProfile(user: PublicUser, patch: { avatar?: number | null; bio?: string }): Promise<PublicUser | null> {
+  const clean: Profile = {};
+  if (patch.avatar !== undefined) clean.avatar = patch.avatar ?? undefined;
+  if (patch.bio !== undefined) clean.bio = patch.bio || undefined;
+  if (!user.owner) return patchUser(user.id, clean);
+  const r = redis();
+  await r.set(OWNER_PROFILE, { ...((await r.get<Profile>(OWNER_PROFILE)) ?? {}), ...clean });
+  return owner();
+}
 
 export async function deleteUser(id: string) {
   const r = redis();

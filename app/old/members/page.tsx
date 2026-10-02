@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { authorOf, listPosts } from "@/lib/posts";
 import { currentUser, listUsers, usersById, ownerId } from "@/lib/users";
+import Avatar from "../Avatar";
 import Shell from "../Shell";
 import UserName from "../UserName";
 
@@ -28,7 +29,7 @@ export default async function Members() {
         )}
       </div>
       <p className="old-intro">
-        {all.length} {all.length === 1 ? "member" : "members"}. {me ? "pick someone to send them a private message." : "log in to send private messages."}
+        {all.length} {all.length === 1 ? "member" : "members"}. {me ? "click a name to see their profile." : "click a name to see their profile."}
       </p>
       <table className="old-table">
         <thead>
@@ -44,8 +45,8 @@ export default async function Members() {
           {all.map((u) => (
             <tr key={u.id}>
               <td className="old-uid">{u.num ? `#${u.num}` : ""}</td>
-              <td>
-                <UserName user={u} />
+              <td className="old-member">
+                <Avatar user={u} size={28} /> <UserName user={u} />
               </td>
               <td>{u.createdAt ? new Date(u.createdAt).toLocaleDateString("en-GB") : "day one"}</td>
               <td>{count[u.id] ?? 0}</td>

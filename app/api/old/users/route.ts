@@ -1,24 +1,36 @@
-// Account settings (your own name colour) and user management (admins).
+// Account settings (your own name colour and bio) and user management (admins).
 import { forbidden, sameOrigin, unauthorized } from "@/lib/auth";
+import { deleteAvatar } from "@/lib/avatars";
 import { purgeMessages } from "@/lib/messages";
 import { redis } from "@/lib/redis";
 import { POST_INDEX, listPosts, postKey } from "@/lib/posts";
-import { ROLES, currentUser, deleteUser, getUser, isAdmin, setColor, setRole, validColor, type Role } from "@/lib/users";
+import { ROLES, currentUser, deleteUser, getUser, isAdmin, setColor, setProfile, setRole, validColor, type Role } from "@/lib/users";
 import { clearVotes } from "@/lib/votes";
 
 export const dynamic = "force-dynamic";
 
-/** Change your own name colour. */
+const MAX_BIO = 300;
+
+/** Change your own name colour and/or "about me" text. */
 export async function PATCH(req: Request) {
   if (!sameOrigin(req)) return forbidden("Bad origin");
   const me = await currentUser();
   if (!me) return unauthorized();
-  if (me.owner) return Response.json({ error: "The owner's name keeps its gradient." }, { status: 400 });
   const body = await req.json().catch(() => null);
-  if (!validColor(body?.color)) {
-    return Response.json({ error: "Pick a brighter colour (names sit on a dark background)." }, { status: 400 });
+  if (body?.color === undefined && body?.bio === undefined) return Response.json({ error: "Nothing to change" }, { status: 400 });
+  if (body.color !== undefined) {
+    if (me.owner) return Response.json({ error: "The owner's name keeps its gradient." }, { status: 400 });
+    if (!validColor(body.color)) {
+      return Response.json({ error: "Pick a brighter colour (names sit on a dark background)." }, { status: 400 });
+    }
   }
-  return Response.json(await setColor(me.id, body.color));
+  if (body.bio !== undefined && (typeof body.bio !== "string" || body.bio.length > MAX_BIO)) {
+    return Response.json({ error: `"About me" can be up to ${MAX_BIO} characters.` }, { status: 400 });
+  }
+  let user = me;
+  if (body.color !== undefined) user = (await setColor(me.id, body.color)) ?? user;
+  if (body.bio !== undefined) user = (await setProfile(me, { bio: body.bio.trim() })) ?? user;
+  return Response.json(user);
 }
 
 /** Admins manage members and moderators. Only the owner can touch other admins. */
@@ -52,6 +64,6 @@ export async function DELETE(req: Request) {
     const r = redis();
     await Promise.all(posts.flatMap((p) => [r.del(postKey(p.id)), r.zrem(POST_INDEX, p.id), clearVotes(p.id)]));
   }
-  await Promise.all([deleteUser(t.user.id), purgeMessages(t.user.id)]);
+  await Promise.all([deleteUser(t.user.id), purgeMessages(t.user.id), deleteAvatar(t.user.id)]);
   return Response.json({ ok: true });
 }

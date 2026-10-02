@@ -937,3 +937,89 @@
   font-family: "Courier New", monospace;
   font-weight: bold;
 }
+
+/* ───────────── profiles & profile pictures ───────────── */
+.old a.old-userlink,
+.old a.old-userlink:hover {
+  text-decoration: none;
+  background: none;
+}
+.old a.old-userlink:hover .old-user {
+  filter: brightness(1.25);
+}
+.old-av {
+  display: inline-block;
+  flex: none;
+  object-fit: cover;
+  border: 2px solid #c9a2ff;
+  background: #070d1f;
+  vertical-align: middle;
+}
+.old-av.none {
+  display: inline-grid;
+  place-items: center;
+  color: var(--c);
+  font: bold 16px/1 "Courier New", monospace;
+  background: linear-gradient(180deg, #101c3a, #070d1f);
+}
+.old-member {
+  white-space: nowrap;
+}
+.old-profile {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+.old-profile-name {
+  margin: 0 0 8px;
+  font-size: 16px;
+}
+.old-profile-name .old-user {
+  font-size: 16px;
+  padding: 1px 10px;
+}
+.old-profile dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2px 14px;
+  margin: 0;
+}
+.old-profile dt {
+  font-weight: bold;
+  color: #7a6a8a;
+}
+.old-profile dd {
+  margin: 0;
+}
+.old-h3 {
+  margin: 16px 0 6px;
+  padding-bottom: 2px;
+  border-bottom: 1px dotted #c9a2ff;
+  font-family: "Comic Sans MS", "Comic Neue", cursive;
+  font-size: 15px;
+  color: var(--purple);
+}
+.old-bio {
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.old-avatar-edit {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+.old-editor textarea.old-bio-edit {
+  min-height: 0;
+  font-family: Verdana, sans-serif;
+}
+.old.dark .old-profile dt {
+  color: #a999c4;
+}
+.old.dark .old-av,
+.old.dark .old-h3 {
+  border-color: #5a3d99;
+}
