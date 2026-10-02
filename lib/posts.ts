@@ -1,6 +1,7 @@
 import "server-only";
 import { createHmac } from "node:crypto";
 import { headers } from "next/headers";
+import { isBot } from "./bots";
 import { hasRedis, listDocs, redis } from "./redis";
 import { isAdmin, ownerId, usersById, type PublicUser } from "./users";
 import { votesFor, type Votes } from "./votes";
@@ -81,7 +82,8 @@ export async function visitorCount(countThis: boolean): Promise<number> {
   if (countThis) {
     const h = await headers();
     const ip = h.get("x-real-ip") ?? h.get("x-forwarded-for")?.split(",")[0]?.trim();
-    if (ip) {
+    // Crawlers, link previews and scripts aren't visitors: show the number, don't add to it.
+    if (ip && !isBot(h)) {
       const tag = createHmac("sha256", process.env.SESSION_SECRET ?? "visitors").update(ip).digest("base64url").slice(0, 22);
       if (await r.sadd(VISITORS, tag)) return r.incr(HITS);
     }
