@@ -83,6 +83,7 @@
   color: var(--muted);
 }
 .pf-field input,
+.pf-field select,
 .pf-field textarea {
   width: 100%;
   padding: 12px 0;
@@ -99,6 +100,7 @@
   font-size: 16px;
 }
 .pf-field input:focus,
+.pf-field select:focus,
 .pf-field textarea:focus {
   border-color: var(--accent);
 }
@@ -465,4 +467,85 @@
 .pf-row-actions .danger:hover {
   border-color: var(--danger);
   color: var(--danger);
+}
+
+/* ── sections ── */
+.pf-tabs {
+  display: flex;
+  gap: 8px;
+  margin: 0 0 28px;
+}
+.pf-tabs button {
+  padding: 8px 18px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  cursor: pointer;
+}
+.pf-tabs button.on {
+  border-color: var(--accent);
+  color: var(--fg);
+}
+.pf-tabs small {
+  margin-left: 6px;
+  color: var(--muted);
+}
+
+/* ── lightbox carousel: swipe / scroll / arrows ── */
+.pf-lb-stage {
+  position: relative;
+  overflow: hidden;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+.pf-track {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  overscroll-behavior-x: contain;
+  outline: none;
+}
+.pf-track::-webkit-scrollbar {
+  display: none;
+}
+.pf-slide {
+  flex: 0 0 100%;
+  scroll-snap-align: center;
+  display: grid;
+  place-items: center;
+  padding: 24px 16px 0;
+}
+@media (min-width: 900px) {
+  .pf-slide {
+    padding: 40px 40px 12px;
+  }
+}
+.pf-dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 0;
+}
+.pf-dots button {
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--line);
+  cursor: pointer;
+}
+.pf-dots button.on {
+  background: var(--accent);
+}
+
+.pf-field select option {
+  background: #0c1338;
+  color: var(--fg);
 }

@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { hasSession } from "@/lib/auth";
 import { hasRedis } from "@/lib/redis";
-import { imageUrl, listPortfolio } from "@/lib/portfolio";
+import { asCategory, imageUrl, listPortfolio } from "@/lib/portfolio";
 import ManageClient from "./ManageClient";
 
 export const dynamic = "force-dynamic";
@@ -29,6 +29,7 @@ export default async function ManagePage() {
           id: i.id,
           title: i.title,
           year: i.year,
+          category: asCategory(i.category),
           description: i.description,
           count: i.images.length,
           thumb: i.images[0] ? imageUrl(i.images[0].pathname) : "",

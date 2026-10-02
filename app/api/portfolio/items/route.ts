@@ -2,7 +2,7 @@ import { del } from "@vercel/blob";
 import { guard } from "@/lib/auth";
 import { redis } from "@/lib/redis";
 import { randomId } from "@/lib/id";
-import { PF_INDEX, PF_PREFIX, getPortfolioItem, listPortfolio, pfKey, type PfItem } from "@/lib/portfolio";
+import { PF_INDEX, asCategory, PF_PREFIX, getPortfolioItem, listPortfolio, pfKey, type PfItem } from "@/lib/portfolio";
 
 export const dynamic = "force-dynamic";
 
@@ -39,6 +39,7 @@ export async function POST(req: Request) {
     title: str(body.title, 140) || "Untitled",
     description: str(body.description, 4000),
     year: str(body.year, 12),
+    category: asCategory(body.category),
     images,
     createdAt: Date.now(),
   };
@@ -58,6 +59,7 @@ export async function PATCH(req: Request) {
   if (body.title !== undefined) item.title = str(body.title, 140) || "Untitled";
   if (body.description !== undefined) item.description = str(body.description, 4000);
   if (body.year !== undefined) item.year = str(body.year, 12);
+  if (body.category !== undefined) item.category = asCategory(body.category);
   await redis().set(pfKey(item.id), item);
 
   // Move to top/bottom

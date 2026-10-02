@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { canViewPortfolio, hasSession } from "@/lib/auth";
 import { hasRedis } from "@/lib/redis";
-import { imageUrl, listPortfolio } from "@/lib/portfolio";
+import { asCategory, imageUrl, listPortfolio } from "@/lib/portfolio";
 import Gallery, { type GalleryItem } from "./Gallery";
 import LogoutButton from "@/components/LogoutButton";
 
@@ -17,6 +17,7 @@ export default async function PortfolioPage() {
     title: i.title,
     description: i.description,
     year: i.year,
+    category: asCategory(i.category),
     images: i.images.map((im) => ({ src: imageUrl(im.pathname), w: im.w, h: im.h })),
   }));
 

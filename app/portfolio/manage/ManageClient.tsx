@@ -3,7 +3,9 @@ import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { upload } from "@vercel/blob/client";
 
-type Row = { id: string; title: string; year: string; description: string; count: number; thumb: string };
+type Category = "photography" | "art";
+const LABEL: Record<Category, string> = { photography: "Photography", art: "Art" };
+type Row = { id: string; title: string; year: string; category: Category; description: string; count: number; thumb: string };
 
 async function dimensions(file: File): Promise<{ w?: number; h?: number }> {
   try {
@@ -23,6 +25,7 @@ function safeName(name: string) {
 export default function ManageClient({ items }: { items: Row[] }) {
   const router = useRouter();
   const [title, setTitle] = useState("");
+  const [category, setCategory] = useState<Category>("photography");
   const [year, setYear] = useState(String(new Date().getFullYear()));
   const [description, setDescription] = useState("");
   const [files, setFiles] = useState<File[]>([]);
@@ -51,7 +54,7 @@ export default function ManageClient({ items }: { items: Row[] }) {
       const res = await fetch("/api/portfolio/items", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, year, description, images }),
+        body: JSON.stringify({ title, year, category, description, images }),
       });
       if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error ?? "Save failed");
       setTitle("");
@@ -82,6 +85,15 @@ export default function ManageClient({ items }: { items: Row[] }) {
     router.refresh();
   }
 
+  async function setSection(id: string, to: Category) {
+    await fetch("/api/portfolio/items", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, category: to }),
+    });
+    router.refresh();
+  }
+
   async function edit(row: Row) {
     const t = prompt("Title", row.title);
     if (t === null) return;
@@ -104,6 +116,13 @@ export default function ManageClient({ items }: { items: Row[] }) {
         <label className="pf-field">
           <span>Title</span>
           <input value={title} onChange={(e) => setTitle(e.target.value)} maxLength={140} placeholder="Untitled" />
+        </label>
+        <label className="pf-field">
+          <span>Section</span>
+          <select value={category} onChange={(e) => setCategory(e.target.value as Category)}>
+            <option value="photography">Photography</option>
+            <option value="art">Art</option>
+          </select>
         </label>
         <label className="pf-field">
           <span>Year</span>
@@ -145,10 +164,13 @@ export default function ManageClient({ items }: { items: Row[] }) {
             <div>
               <strong>{r.title}</strong>
               <small>
-                {r.year} · {r.count} image{r.count === 1 ? "" : "s"}
+                {LABEL[r.category]} · {r.year} · {r.count} image{r.count === 1 ? "" : "s"}
               </small>
             </div>
             <div className="pf-row-actions">
+              <button onClick={() => setSection(r.id, r.category === "art" ? "photography" : "art")}>
+                → {r.category === "art" ? "Photography" : "Art"}
+              </button>
               <button onClick={() => toTop(r.id)}>↑ Top</button>
               <button onClick={() => edit(r)}>Edit</button>
               <button onClick={() => remove(r.id, r.title)} className="danger">
