@@ -3,13 +3,14 @@
 import { useState } from "react";
 import { fmtDate, post } from "../client";
 import HwidForm from "../verify/HwidForm";
+import { isStaffTier, tierClass } from "@/lib/tiers";
 import type { publicUser, Payment } from "@/lib/store";
 
 export type PublicUser = ReturnType<typeof publicUser>;
 type Rel = { channel: string; version: string; name: string; size: number; uploadedAt: number };
 
 function TierPill({ tier }: { tier: string }) {
-  return <span className={`st-pill ${tier === "dev" ? "dev" : tier === "beta" ? "beta" : ""}`}>{tier}</span>;
+  return <span className={`st-pill ${tierClass(tier)}`}>{tier}</span>;
 }
 
 export default function Dashboard(props: { initial: PublicUser; payments: Payment[]; releases: Rel[]; cooldownMs: number; paid: boolean }) {
@@ -18,9 +19,9 @@ export default function Dashboard(props: { initial: PublicUser; payments: Paymen
   const [pw, setPw] = useState({ email: "", current: "", password: "" });
   const [pwMsg, setPwMsg] = useState("");
 
-  const left = u.expiresAt === null || u.tier === "dev" ? null : u.expiresAt ? u.expiresAt - Date.now() : 0;
+  const left = u.expiresAt === null || isStaffTier(u.tier) ? null : u.expiresAt ? u.expiresAt - Date.now() : 0;
   const days = left === null ? null : Math.max(0, Math.ceil(left / 86400000));
-  const slots = u.tier === "dev" ? "unlimited" : "3";
+  const slots = isStaffTier(u.tier) ? "unlimited" : "3";
 
   async function removeMc(uuid: string) {
     setErr("");
@@ -69,7 +70,7 @@ export default function Dashboard(props: { initial: PublicUser; payments: Paymen
               <span className="st-dim">nothing bought yet</span>
             )}
           </p>
-          {u.tier !== "dev" && u.expiresAt !== null && (
+          {!isStaffTier(u.tier) && u.expiresAt !== null && (
             <a className="st-btn primary" href="/purchase">
               {u.active ? "Add a month" : "Buy a month"}
             </a>

@@ -1,6 +1,7 @@
 import "server-only";
 import { redis } from "./redis";
 import type { StoreUser } from "./store";
+import { isStaffTier } from "./tiers";
 
 // Mod downloads: one current jar per channel, kept in the private Blob store under releases/.
 
@@ -21,4 +22,4 @@ export async function setRelease(r: Release) {
 }
 
 /** Beta builds are for beta testers and devs. */
-export const canGet = (u: StoreUser, c: Channel) => c === "stable" || u.tier === "beta" || u.tier === "dev";
+export const canGet = (u: StoreUser, c: Channel) => c === "stable" || u.tier === "beta" || isStaffTier(u.tier);

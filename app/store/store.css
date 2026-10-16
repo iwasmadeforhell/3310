@@ -84,6 +84,7 @@ select.st-input { padding: 8px 10px; }
 .st-pill.bad { color: var(--bad); border-color: color-mix(in srgb, var(--bad) 45%, transparent); }
 .st-pill.warn { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 45%, transparent); }
 .st-pill.dev { color: #c8a2fe; border-color: #5a3f86; }
+.st-pill.owner { color: #ffd479; border-color: #7a5a14; background: linear-gradient(90deg, rgba(255, 212, 121, .12), rgba(162, 207, 254, .12)); }
 .st-pill.beta { color: var(--accent); border-color: #2f4e72; }
 
 .st-price { font-size: 48px; font-weight: 800; letter-spacing: -0.02em; }

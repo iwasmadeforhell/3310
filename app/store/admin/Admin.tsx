@@ -4,11 +4,11 @@ import { upload } from "@vercel/blob/client";
 import { useEffect, useMemo, useState } from "react";
 import { fmtDate, post } from "../client";
 import type { PublicUser } from "../dashboard/Dashboard";
+import { TIERS, TIER_ORDER, isStaffTier, tierClass } from "@/lib/tiers";
 
 type Rel = { channel: string; version: string; name: string; size: number; uploadedAt: number };
 type Data = { users: PublicUser[]; devHwids: string[]; releases: Rel[] };
 
-const TIER_ORDER = { dev: 0, beta: 1, normal: 2 } as const;
 
 export default function Admin() {
   const [data, setData] = useState<Data | null>(null);
@@ -77,8 +77,8 @@ export default function Admin() {
           <span>beta</span>
         </div>
         <div className="st-stat">
-          <b>{all.filter((u) => u.tier === "dev").length + data.devHwids.length}</b>
-          <span>dev (accounts + PCs)</span>
+          <b>{all.filter((u) => isStaffTier(u.tier)).length + data.devHwids.length}</b>
+          <span>owner / dev (accounts + PCs)</span>
         </div>
         <div className="st-stat">
           <b>{all.filter((u) => u.hwid).length}</b>
@@ -146,7 +146,7 @@ function UserRow({ u, open, toggle, act }: { u: PublicUser; open: boolean; toggl
   const [note, setNote] = useState(u.note ?? "");
   const lic = u.banned ? (
     <span className="st-pill bad">banned</span>
-  ) : u.tier === "dev" || u.expiresAt === null ? (
+  ) : isStaffTier(u.tier) || u.expiresAt === null ? (
     <span className="st-pill ok">never expires</span>
   ) : u.active ? (
     <span className="st-pill ok">until {fmtDate(u.expiresAt)}</span>
@@ -163,7 +163,7 @@ function UserRow({ u, open, toggle, act }: { u: PublicUser; open: boolean; toggl
           <span className="st-dim">{u.discordName && u.email ? u.email : `joined ${fmtDate(u.createdAt)}`}</span>
         </td>
         <td>
-          <span className={`st-pill ${u.tier === "dev" ? "dev" : u.tier === "beta" ? "beta" : ""}`}>{u.tier}</span>
+          <span className={`st-pill ${tierClass(u.tier)}`}>{u.tier}</span>
         </td>
         <td>{lic}</td>
         <td className="st-mono">{u.hwid ?? <span className="st-dim">-</span>}</td>
@@ -181,9 +181,11 @@ function UserRow({ u, open, toggle, act }: { u: PublicUser; open: boolean; toggl
                 <h3>Tier &amp; licence</h3>
                 <div className="st-actions-row" style={{ marginBottom: 8 }}>
                   <select className="st-input" style={{ width: "auto" }} value={u.tier} onChange={(e) => act(u.id, "tier", { tier: e.target.value })}>
-                    <option value="normal">normal</option>
-                    <option value="beta">beta</option>
-                    <option value="dev">dev</option>
+                    {TIERS.map((t) => (
+                      <option key={t} value={t}>
+                        {t}
+                      </option>
+                    ))}
                   </select>
                   <button className="st-btn small" onClick={() => act(u.id, "addMonth")}>
                     +1 month

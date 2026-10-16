@@ -1,6 +1,6 @@
 import "server-only";
 import { createPrivateKey, sign } from "node:crypto";
-import { devHwids, getUser, isActive, mcLimit, normHwid, saveUser, userByHwid, type Tier } from "./store";
+import { devHwids, getUser, isActive, isStaffTier, mcLimit, normHwid, saveUser, userByHwid, type Tier } from "./store";
 
 // Licence answers for the mod. Every answer is signed (Ed25519, LICENSE_SIGNING_KEY = PKCS#8 DER, base64) over
 //   v1|<status>|<tier>|<hwid>|<uuid>|<nonce>|<issuedAt>|<expiresAt>
@@ -39,16 +39,17 @@ export async function check(hwidRaw: string, uuidRaw: string, name: string, nonc
   const uuid = normUuid(uuidRaw);
   const base = { hwid, uuid, nonce, issuedAt: Date.now() };
 
-  if (devHwids().includes(hwid)) {
+  const found = await userByHwid(hwid);
+  // A whitelisted PC is always licensed - as dev, unless it is verified on an owner/dev account (then that tier shows).
+  if (devHwids().includes(hwid) && !(found && isStaffTier(found.tier) && !found.banned)) {
     return { ...base, status: "ok", tier: "dev", expiresAt: -1, message: "Developer PC", account: "dev" };
   }
 
-  const found = await userByHwid(hwid);
   if (!found) {
     return { ...base, status: "unverified", tier: "", expiresAt: 0, message: "This PC is not verified yet. Verify it at 3310.nz/verify." };
   }
   let u = (await getUser(found.id)) ?? found;
-  const exp = u.expiresAt === null || u.tier === "dev" ? -1 : u.expiresAt ?? 0;
+  const exp = u.expiresAt === null || isStaffTier(u.tier) ? -1 : u.expiresAt ?? 0;
   const who = u.discordName ?? u.email ?? "";
   if (u.banned) return { ...base, status: "banned", tier: u.tier, expiresAt: exp, message: "This account is banned.", account: who };
   if (!isActive(u)) {

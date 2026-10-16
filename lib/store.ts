@@ -9,8 +9,8 @@ import { hasRedis, redis } from "./redis";
 
 const scrypt = promisify(scryptCb) as (pw: string, salt: Buffer, len: number) => Promise<Buffer>;
 
-export type Tier = "normal" | "beta" | "dev";
-export const TIERS: Tier[] = ["normal", "beta", "dev"];
+import { isStaffTier, type Tier } from "./tiers";
+export { TIERS, isStaffTier, type Tier } from "./tiers";
 
 export type McAccount = { uuid: string; name: string; addedAt: number };
 
@@ -71,11 +71,11 @@ export function devHwids(): string[] {
 
 export function isActive(u: StoreUser, now = Date.now()): boolean {
   if (u.banned) return false;
-  if (u.tier === "dev" || u.expiresAt === null) return true;
+  if (isStaffTier(u.tier) || u.expiresAt === null) return true;
   return u.expiresAt > now;
 }
 
-export const mcLimit = (u: StoreUser) => (u.tier === "dev" ? Infinity : MC_SLOTS);
+export const mcLimit = (u: StoreUser) => (isStaffTier(u.tier) ? Infinity : MC_SLOTS);
 
 export function displayName(u: StoreUser) {
   return u.discordName ?? u.email ?? u.id;

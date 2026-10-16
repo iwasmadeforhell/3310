@@ -1,4 +1,4 @@
-import { MC_SLOTS, PRICE_CENTS, currentUser, isActive } from "@/lib/store";
+import { MC_SLOTS, PRICE_CENTS, currentUser, isActive, isStaffTier } from "@/lib/store";
 import BuyButton from "./BuyButton";
 
 export const metadata = { title: "Purchase" };
@@ -7,7 +7,7 @@ export default async function Purchase({ searchParams }: { searchParams: Promise
   const sp = await searchParams;
   const u = await currentUser().catch(() => null);
   const price = (PRICE_CENTS / 100).toFixed(2);
-  const running = u && isActive(u) && u.expiresAt !== null && u.tier !== "dev";
+  const running = u && isActive(u) && u.expiresAt !== null && !isStaffTier(u.tier);
   return (
     <div style={{ maxWidth: 460, margin: "0 auto" }}>
       <h1 style={{ fontSize: 36, textAlign: "center" }}>Get 3310 Client</h1>
