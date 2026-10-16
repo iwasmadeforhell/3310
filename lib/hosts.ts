@@ -18,6 +18,11 @@ export function sectionForHost(host: string | null): Section | null {
   return (SECTIONS as readonly string[]).includes(sub ?? "") ? (sub as Section) : null;
 }
 
+/** archive.3310.nz (and archive.localhost) serve the old phone front page. */
+export function isArchiveHost(host: string | null): boolean {
+  return subdomain(host) === "archive";
+}
+
 /** old.3310.nz -> "forum", anything else -> null */
 export function movedSectionForHost(host: string | null): Section | null {
   return MOVED[subdomain(host) ?? ""] ?? null;

@@ -1,6 +1,7 @@
 // Host-based routing (Next.js 16 "proxy", formerly middleware).
 //
-//   3310.nz            -> app/page.tsx, /s/<code>, /f/<id>
+//   3310.nz            -> app/store/* (3310 Client store), /s/<code>, /f/<id>
+//   archive.3310.nz    -> app/archive/* (the old phone front page)
 //   portfolio.3310.nz  -> app/portfolio/*
 //   drop.3310.nz       -> app/drop/*
 //   forum.3310.nz      -> app/old/*   (old.3310.nz redirects here)
@@ -11,7 +12,7 @@
 
 import { NextResponse, type NextRequest } from "next/server";
 import { COOKIE, verifyToken } from "./lib/session";
-import { FOLDER, MOVED, SECTIONS, movedSectionForHost, sectionForHost } from "./lib/hosts";
+import { FOLDER, MOVED, SECTIONS, isArchiveHost, movedSectionForHost, sectionForHost } from "./lib/hosts";
 
 const ROOT = process.env.ROOT_DOMAIN ?? "3310.nz";
 
@@ -33,7 +34,15 @@ export async function proxy(req: NextRequest) {
     return NextResponse.redirect(new URL(`https://${moved}.${ROOT}${path}${url.search}`), 308);
   }
 
-  // ---------- main domain ----------
+  // ---------- archive.3310.nz: the old phone front page ----------
+  if (isArchiveHost(host)) {
+    if (passthrough) return NextResponse.next();
+    const dest = url.clone();
+    dest.pathname = `/archive${path === "/" ? "" : path}`;
+    return NextResponse.rewrite(dest);
+  }
+
+  // ---------- main domain: the 3310 Client store (app/store/*) ----------
   if (!section) {
     // Keep section pages on their own subdomains (cookies are per-subdomain).
     const first = path.split("/")[1];
@@ -42,7 +51,10 @@ export async function proxy(req: NextRequest) {
       const dest = new URL(`https://${target}.${ROOT}${path.slice(first.length + 1) || "/"}`);
       return NextResponse.redirect(dest, 308);
     }
-    return NextResponse.next();
+    if (passthrough || path.startsWith("/s/") || path.startsWith("/f/")) return NextResponse.next();
+    const dest = url.clone();
+    dest.pathname = `/store${path === "/" ? "" : path}`;
+    return NextResponse.rewrite(dest);
   }
 
   if (passthrough || path.startsWith("/s/") || path.startsWith("/f/")) {
