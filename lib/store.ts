@@ -56,7 +56,11 @@ export const normHwid = (h: string) => h.trim().toUpperCase();
 
 export function isAdmin(u: StoreUser | null): boolean {
   if (!u) return false;
-  const list = (process.env.STORE_ADMINS ?? "").split(",").map((s) => s.trim().toLowerCase()).filter(Boolean);
+  // emails and/or Discord user ids, comma or space separated; stray quotes are ignored
+  const list = (process.env.STORE_ADMINS ?? "")
+    .split(/[,\s;]+/)
+    .map((s) => s.replace(/["'`<>]/g, "").trim().toLowerCase())
+    .filter(Boolean);
   return (!!u.email && list.includes(u.email)) || (!!u.discordId && list.includes(u.discordId));
 }
 
