@@ -1,16 +1,16 @@
 import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
 import { del } from "@vercel/blob";
 import { CHANNELS, RELEASE_PREFIX, getRelease, setRelease, type Channel } from "@/lib/releases";
-import { bad, needAdmin } from "@/lib/storeApi";
+import { bad, deployAuthorized, needAdmin } from "@/lib/storeApi";
 
 export const dynamic = "force-dynamic";
 
 const MAX_JAR = 60 * 1024 * 1024;
 
-// Admin: upload a mod jar straight to Blob (client upload), then PUT the release record for a channel.
+// Admin (or the mod build with the deploy token): upload a mod jar straight to Blob (client upload), then PUT the release record for a channel.
 export async function POST(req: Request) {
   const body = (await req.json()) as HandleUploadBody;
-  if (body.type === "blob.generate-client-token") {
+  if (body.type === "blob.generate-client-token" && !deployAuthorized(req)) {
     const a = await needAdmin(req);
     if (a instanceof Response) return a;
   }
@@ -31,8 +31,10 @@ export async function POST(req: Request) {
 }
 
 export async function PUT(req: Request) {
-  const a = await needAdmin(req);
-  if (a instanceof Response) return a;
+  if (!deployAuthorized(req)) {
+    const a = await needAdmin(req);
+    if (a instanceof Response) return a;
+  }
   const b = (await req.json().catch(() => ({}))) as { channel?: Channel; pathname?: string; name?: string; version?: string; size?: number };
   if (!b.channel || !CHANNELS.includes(b.channel)) return bad("Pick a channel.");
   if (!b.pathname?.startsWith(RELEASE_PREFIX)) return bad("Bad file.");

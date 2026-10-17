@@ -1,20 +1,27 @@
 // Uploads a mod jar as the current build of a channel, the same way 3310.nz/admin -> Builds does.
-//   $env:NK_ST="<your nk_st cookie>"; node scripts/upload-release.mjs <jar> <version> [stable|beta]
-// NK_ST is the value of the "nk_st" cookie of an admin login on 3310.nz (browser dev tools -> Application -> Cookies).
+//   node scripts/upload-release.mjs <jar> <version> [stable|beta]
+// Auth: the deploy token (env DEPLOY_TOKEN, or the file %APPDATA%/3310/deploy.token = Vercel env RELEASE_DEPLOY_TOKEN),
+// or NK_ST = the "nk_st" cookie of an admin login on 3310.nz. The mod's Gradle build runs this after every build.
 
 import { readFile } from "node:fs/promises";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { basename } from "node:path";
 import { upload } from "@vercel/blob/client";
 
 const [jar, version, channel = "beta"] = process.argv.slice(2);
 const cookie = process.env.NK_ST;
+let token = process.env.DEPLOY_TOKEN;
+if (!token && !cookie && process.env.APPDATA) {
+  try { token = readFileSync(join(process.env.APPDATA, "3310", "deploy.token"), "utf8").trim(); } catch {}
+}
 const SITE = process.env.SITE ?? "https://3310.nz";
-if (!jar || !version || !cookie || !["stable", "beta"].includes(channel)) {
-  console.error('usage: $env:NK_ST="<cookie>"; node scripts/upload-release.mjs <jar> <version> [stable|beta]');
+if (!jar || !version || !(cookie || token) || !["stable", "beta"].includes(channel)) {
+  console.error("usage: node scripts/upload-release.mjs <jar> <version> [stable|beta]  (needs %APPDATA%/3310/deploy.token, DEPLOY_TOKEN or NK_ST)");
   process.exit(1);
 }
 
-const headers = { Cookie: `nk_st=${cookie}`, Origin: SITE };
+const headers = token ? { Authorization: `Bearer ${token}`, Origin: SITE } : { Cookie: `nk_st=${cookie}`, Origin: SITE };
 const data = await readFile(jar);
 const name = basename(jar);
 const file = new File([data], name, { type: "application/java-archive" });

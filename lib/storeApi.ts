@@ -1,4 +1,5 @@
 import "server-only";
+import { timingSafeEqual } from "node:crypto";
 import { clientIp, sameOrigin } from "./auth";
 import { rateLimited } from "./redis";
 import { currentUser, isAdmin, sessionCookie, sessionToken, storeReady, type StoreUser } from "./store";
@@ -18,6 +19,14 @@ export async function needAdmin(req: Request, mutating = true): Promise<StoreUse
   const u = await needUser(req, mutating);
   if (u instanceof Response) return u;
   return isAdmin(u) ? u : bad("Admins only.", 403);
+}
+
+/** Build uploads from the mod's Gradle build: "Authorization: Bearer <RELEASE_DEPLOY_TOKEN>" (32+ chars). */
+export function deployAuthorized(req: Request): boolean {
+  const want = process.env.RELEASE_DEPLOY_TOKEN ?? "";
+  const got = (req.headers.get("authorization") ?? "").replace(/^Bearer\s+/i, "");
+  if (want.length < 32 || got.length !== want.length) return false;
+  return timingSafeEqual(Buffer.from(got), Buffer.from(want));
 }
 
 export async function limited(req: Request, what: string, n: number, sec: number) {
