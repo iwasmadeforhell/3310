@@ -23,8 +23,11 @@ type Body = {
   title?: string;
   text?: string;
   fields?: { name?: string; value?: string; inline?: boolean }[];
-  upload?: { id?: string; parts?: number; name?: string; type?: string };
+  upload?: Upload;
+  /** A screenshot sent alongside a clip (shown in the embed). */
+  image?: Upload;
 };
+type Upload = { id?: string; parts?: number; name?: string; type?: string };
 
 const TYPES = /^(video\/mp4|image\/jpeg|image\/png)$/;
 
@@ -43,27 +46,9 @@ export async function POST(req: Request) {
   await touchAccount(a.hash, a.acct, { lastSeen: Date.now(), lastStatus: kind === "status" ? clip(b.text, 300) : a.acct.lastStatus });
 
   // read the uploaded parts (if any) before deciding to skip, so they are always cleaned up
-  let file: OutFile | undefined;
   const parts: string[] = [];
-  if (b.upload?.id && /^[a-z0-9]{12,40}$/.test(b.upload.id)) {
-    const n = Math.min(Number(b.upload.parts ?? 0), 10);
-    const base = `${CHUNK_PREFIX}${a.hash.slice(0, 24)}/${b.upload.id}/`;
-    const bufs: Buffer[] = [];
-    let total = 0;
-    for (let i = 0; i < n; i++) {
-      const p = `${base}${String(i).padStart(3, "0")}`;
-      parts.push(p);
-      const r = await get(p, { access: "private" });
-      if (!r) break;
-      const buf = Buffer.from(await new Response(r.stream).arrayBuffer());
-      total += buf.length;
-      if (total > MAX_UPLOAD) break;
-      bufs.push(buf);
-    }
-    const type = TYPES.test(b.upload.type ?? "") ? (b.upload.type as string) : "video/mp4";
-    const name = /^[A-Za-z0-9._-]{1,80}$/.test(b.upload.name ?? "") ? (b.upload.name as string) : type === "video/mp4" ? "clip.mp4" : "frame.jpg";
-    if (bufs.length === n && total <= MAX_UPLOAD && total > 0) file = { name, type, data: Buffer.concat(bufs) };
-  }
+  const file = await readUpload(a.hash, b.upload, parts);
+  const image = await readUpload(a.hash, b.image, parts);
 
   try {
     if (kind === "status" && !cfg.updates) return Response.json({ ok: true, skipped: "status updates are off" });
@@ -76,9 +61,12 @@ export async function POST(req: Request) {
       footer: { text: "3310 Client" },
       timestamp: new Date().toISOString(),
     };
-    if (file?.type.startsWith("image/")) embed.image = { url: `attachment://${file.name}` };
-    await deliver(a.acct.discordId, cfg, embed, kind === "alert", file);
-    return Response.json({ ok: true, attached: !!file });
+    const files = [file, image].filter((f): f is OutFile => !!f);
+    if (files.length === 2 && files[0].name === files[1].name) files[1] = { ...files[1], name: `shot-${files[1].name}` };
+    const shown = files.find((f) => f.type.startsWith("image/"));
+    if (shown) embed.image = { url: `attachment://${shown.name}` };
+    await deliver(a.acct.discordId, cfg, embed, kind === "alert", files);
+    return Response.json({ ok: true, attached: files.length });
   } catch (e) {
     const err = e as DiscordError;
     const msg =
@@ -89,4 +77,27 @@ export async function POST(req: Request) {
   } finally {
     if (parts.length) await del(parts).catch(() => {});
   }
+}
+
+/** Put an upload's chunks back together (their blob paths are added to [parts] for cleanup). */
+async function readUpload(hash: string, u: Upload | undefined, parts: string[]): Promise<OutFile | undefined> {
+  if (!u?.id || !/^[a-z0-9]{12,40}$/.test(u.id)) return undefined;
+  const n = Math.min(Number(u.parts ?? 0), 10);
+  const base = `${CHUNK_PREFIX}${hash.slice(0, 24)}/${u.id}/`;
+  const bufs: Buffer[] = [];
+  let total = 0;
+  for (let i = 0; i < n; i++) {
+    const p = `${base}${String(i).padStart(3, "0")}`;
+    parts.push(p);
+    const r = await get(p, { access: "private" });
+    if (!r) break;
+    const buf = Buffer.from(await new Response(r.stream).arrayBuffer());
+    total += buf.length;
+    if (total > MAX_UPLOAD) break;
+    bufs.push(buf);
+  }
+  const type = TYPES.test(u.type ?? "") ? (u.type as string) : "video/mp4";
+  const name = /^[A-Za-z0-9._-]{1,80}$/.test(u.name ?? "") ? (u.name as string) : type === "video/mp4" ? "clip.mp4" : "frame.jpg";
+  if (bufs.length === n && total <= MAX_UPLOAD && total > 0) return { name, type, data: Buffer.concat(bufs) };
+  return undefined;
 }

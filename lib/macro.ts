@@ -192,16 +192,17 @@ export type Embed = {
 export type OutFile = { name: string; type: string; data: Uint8Array };
 
 /** Send to where this Discord user wants alerts (their DMs or a chosen channel). */
-export async function deliver(discordId: string, cfg: MacroUserCfg, embed: Embed, ping: boolean, file?: OutFile) {
+export async function deliver(discordId: string, cfg: MacroUserCfg, embed: Embed, ping: boolean, files: OutFile | OutFile[] = []) {
+  const list = Array.isArray(files) ? files : [files];
   const channel = cfg.mode === "channel" && cfg.channel ? cfg.channel : await dmChannel(discordId);
   const inChannel = channel === cfg.channel;
   const payload = {
     content: inChannel && ping ? `<@${discordId}>` : undefined,
     embeds: [embed],
     allowed_mentions: { users: inChannel && ping ? [discordId] : [] },
-    attachments: file ? [{ id: 0, filename: file.name }] : undefined,
+    attachments: list.length ? list.map((f, i) => ({ id: i, filename: f.name })) : undefined,
   };
-  if (!file) {
+  if (!list.length) {
     return discord(`/channels/${channel}/messages`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -210,7 +211,7 @@ export async function deliver(discordId: string, cfg: MacroUserCfg, embed: Embed
   }
   const form = new FormData();
   form.set("payload_json", JSON.stringify(payload));
-  form.set("files[0]", new Blob([file.data as BlobPart], { type: file.type }), file.name);
+  list.forEach((f, i) => form.set(`files[${i}]`, new Blob([f.data as BlobPart], { type: f.type }), f.name));
   return discord(`/channels/${channel}/messages`, { method: "POST", body: form });
 }
 
