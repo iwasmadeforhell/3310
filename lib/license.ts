@@ -76,3 +76,26 @@ export async function check(hwidRaw: string, uuidRaw: string, name: string, nonc
   await saveUser({ ...u, lastCheck: Date.now(), lastVersion: typeof version === "string" ? version.slice(0, 32) : undefined });
   return { ...base, status: "ok", tier: u.tier, expiresAt: exp, message: "Licensed", account: who };
 }
+
+/** Who may download builds from the mod: a whitelisted dev PC, or a verified, active, unbanned licence. */
+export async function modAccess(hwidRaw: string): Promise<{ tier: Tier } | { error: string }> {
+  const hwid = normHwid(hwidRaw);
+  const found = await userByHwid(hwid);
+  if (devHwids().includes(hwid) && !(found && !found.banned && isStaffTier(found.tier))) return { tier: "dev" };
+  if (!found) return { error: "This PC is not verified." };
+  const u = (await getUser(found.id)) ?? found;
+  if (u.banned) return { error: "This account is banned." };
+  if (!isActive(u)) return { error: "Your licence isn't active." };
+  return { tier: u.tier };
+}
+
+export type UpdateAnswer = { channel: string; version: string; sha256: string; size: number; hwid: string; nonce: string; sig?: string };
+
+/** Update answers are signed with the licence key over u1|channel|version|sha256|size|hwid|nonce. */
+export function signUpdate(a: UpdateAnswer): UpdateAnswer {
+  const raw = process.env.LICENSE_SIGNING_KEY;
+  if (!raw) throw new Error("LICENSE_SIGNING_KEY is not set");
+  const key = createPrivateKey({ key: Buffer.from(raw, "base64"), format: "der", type: "pkcs8" });
+  const msg = ["u1", a.channel, a.version, a.sha256, a.size, a.hwid, a.nonce].join("|");
+  return { ...a, sig: sign(null, Buffer.from(msg), key).toString("base64") };
+}
