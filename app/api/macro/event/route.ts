@@ -19,7 +19,8 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
 type Body = {
-  kind?: "alert" | "status" | "info";
+  /** "reply": the answer to a /status command - sent even with status updates off. */
+  kind?: "alert" | "status" | "info" | "reply";
   title?: string;
   text?: string;
   fields?: { name?: string; value?: string; inline?: boolean }[];
@@ -41,9 +42,9 @@ export async function POST(req: Request) {
   if (await rateLimited(`macro:event:${a.hash}`, 40, 600)) return Response.json({ error: "Too many alerts" }, { status: 429 });
 
   const b = (await req.json().catch(() => ({}))) as Body;
-  const kind = b.kind === "status" || b.kind === "info" ? b.kind : "alert";
+  const kind = b.kind === "status" || b.kind === "info" || b.kind === "reply" ? b.kind : "alert";
   const cfg = await getCfg(a.acct.discordId);
-  await touchAccount(a.hash, a.acct, { lastSeen: Date.now(), lastStatus: kind === "status" ? clip(b.text, 300) : a.acct.lastStatus });
+  await touchAccount(a.hash, a.acct, { lastSeen: Date.now(), lastStatus: kind === "status" || kind === "reply" ? clip(b.text, 300) : a.acct.lastStatus });
 
   // read the uploaded parts (if any) before deciding to skip, so they are always cleaned up
   const parts: string[] = [];
@@ -55,7 +56,7 @@ export async function POST(req: Request) {
     const embed: Embed = {
       title: clip(b.title, 256) || (kind === "status" ? "Status update" : "Alert"),
       description: clip(b.text, 3500) || undefined,
-      color: kind === "alert" ? COLORS.alert : kind === "status" ? COLORS.status : COLORS.info,
+      color: kind === "alert" ? COLORS.alert : kind === "status" || kind === "reply" ? COLORS.status : COLORS.info,
       fields: (b.fields ?? []).slice(0, 12).map((f) => ({ name: clip(f.name, 256) || "-", value: clip(f.value, 1024) || "-", inline: !!f.inline })),
       author: { name: a.acct.name, icon_url: `https://mc-heads.net/avatar/${a.acct.uuid}/64` },
       footer: { text: "3310 Client" },

@@ -5,6 +5,7 @@ import {
   linkCode,
   listAccounts,
   macroReady,
+  requestStatus,
   setCfg,
   unlinkHash,
   verifyInteraction,
@@ -90,6 +91,19 @@ export async function POST(req: Request) {
       const on = opt("enabled") !== false;
       await setCfg(user.id, { updates: on });
       return reply(on ? "Status updates are on." : "Status updates are off. Alerts (stuck, failsafe, clips) still come through.");
+    }
+    case "status": {
+      const video = opt("video") === true;
+      const name = String(opt("account") ?? "").trim().toLowerCase();
+      const all = await listAccounts(user.id);
+      if (!all.length) return reply("No linked accounts. In the mod open Discord Alerts and press **Link Discord**, then `/link <code>` here.");
+      const hit = name ? all.filter((a) => a.acct.name.toLowerCase() === name) : all;
+      if (!hit.length) return reply(`No linked account called "${name}". Yours: ${all.map((a) => a.acct.name).join(", ")}`);
+      for (const a of hit) await requestStatus(a.hash, video);
+      const lines = hit.map((a) => `- **${a.acct.name}** (last heard from ${ago(a.acct.lastSeen)})`);
+      return reply(
+        `Asked for a screenshot${video ? " and a 5 s video" : ""} from:\n${lines.join("\n")}\n\nIt arrives in a few seconds${video ? " (the video takes ~15 s)" : ""} if the game is running with Discord Alerts on.`,
+      );
     }
     case "test": {
       try {

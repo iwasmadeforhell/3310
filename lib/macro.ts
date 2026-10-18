@@ -32,6 +32,7 @@ const pairKey = (code: string) => `macro:pair:${code}`;
 const userKey = (discordId: string) => `macro:user:${discordId}`; // set of account hashes
 const cfgKey = (discordId: string) => `macro:cfg:${discordId}`;
 const dmKey = (discordId: string) => `macro:dm:${discordId}`;
+const reqKey = (hash: string) => `macro:req:${hash}`;
 
 export const PAIR_TTL_SEC = 15 * 60;
 /** Discord's upload limit for bots without a boosted server. */
@@ -119,6 +120,18 @@ export async function listAccounts(discordId: string): Promise<{ hash: string; a
 export async function unlinkHash(hash: string, discordId: string) {
   const r = redis();
   await Promise.all([r.del(acctKey(hash)), r.srem(userKey(discordId), hash)]);
+}
+
+/** A /status request waiting for the mod to pick it up (it polls /api/macro/me every few seconds). */
+export type MacroRequest = { video: boolean; at: number };
+
+export async function requestStatus(hash: string, video: boolean) {
+  await redis().set(reqKey(hash), { video, at: Date.now() } satisfies MacroRequest, { ex: 120 });
+}
+
+/** The waiting request for this account, removed as it is read (each one is answered once). */
+export async function takeRequest(hash: string): Promise<MacroRequest | null> {
+  return (await redis().getdel<MacroRequest>(reqKey(hash))) ?? null;
 }
 
 export async function getCfg(discordId: string): Promise<MacroUserCfg> {

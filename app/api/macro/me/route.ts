@@ -1,9 +1,10 @@
-import { accountFor, getCfg } from "@/lib/macro";
+import { accountFor, getCfg, takeRequest } from "@/lib/macro";
 import { hasRedis } from "@/lib/redis";
 
 export const dynamic = "force-dynamic";
 
-// Is this mod token linked yet? (polled by the mod while it shows the pairing code)
+// Is this mod token linked yet? (polled by the mod while it shows the pairing code, and every few seconds once linked
+// to pick up /status requests from Discord)
 export async function GET(req: Request) {
   if (!hasRedis()) return Response.json({ error: "Not configured" }, { status: 503 });
   const a = await accountFor(req);
@@ -14,5 +15,6 @@ export async function GET(req: Request) {
     discordName: a.acct.discordName ?? null,
     mode: cfg?.mode ?? null,
     updates: cfg?.updates ?? null,
+    request: a.acct.discordId ? await takeRequest(a.hash) : null,
   });
 }

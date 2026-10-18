@@ -22,6 +22,15 @@ const commands = [
   },
   { name: "updates", description: "Turn the regular status updates on or off", options: [{ type: 5, name: "enabled", description: "On or off", required: true }], ...ctx },
   { name: "test", description: "Send yourself a test alert", ...ctx },
+  {
+    name: "status",
+    description: "Screenshot (and optionally a 5 s video) from your game right now",
+    options: [
+      { type: 5, name: "video", description: "Also record 5 seconds of video", required: false },
+      { type: 3, name: "account", description: "Only this Minecraft account (default: all linked)", required: false },
+    ],
+    ...ctx,
+  },
 ];
 
 const res = await fetch(`https://discord.com/api/v10/applications/${app}/commands`, {
