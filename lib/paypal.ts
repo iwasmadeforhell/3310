@@ -26,6 +26,12 @@ export async function paypalOrderFor(userId: string, who: string): Promise<Paypa
   const o: PaypalOrder = { code: `3310-${randomBytes(4).toString("hex").toUpperCase()}`, userId, who, at: Date.now() };
   await r.hset(ORDERS, { [o.code]: o });
   await r.set(userOrderKey(userId), o.code);
+  const { alertOwner } = await import("./ownerAlerts");
+  await alertOwner({
+    title: "🕓 PayPal order waiting",
+    description: `**${who}** started a PayPal payment with code \`${o.code}\`. When the money (with that code in the note) is in your PayPal, confirm it in 3310.nz/admin.`,
+    color: 0xf5a524,
+  });
   return o;
 }
 

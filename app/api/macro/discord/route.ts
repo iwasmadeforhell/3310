@@ -10,8 +10,11 @@ import {
   unlinkHash,
   verifyInteraction,
 } from "@/lib/macro";
+import { alertOwner, getWhere, ownerId, setWhere } from "@/lib/ownerAlerts";
+import { type Interaction as TicketInteraction, ticketAutocomplete, ticketCommand, ticketComponent, ticketModal } from "@/lib/tickets";
 
 export const dynamic = "force-dynamic";
+export const maxDuration = 60; // ticket work (channel setup, transcripts) runs after the reply
 
 // Discord "Interactions Endpoint URL" for the 3310 bot: slash commands arrive here as signed HTTP requests,
 // so the bot needs no always-on process. Commands are registered by scripts/register-discord-commands.mjs.
@@ -46,9 +49,15 @@ export async function POST(req: Request) {
   }
   const it = JSON.parse(body) as Interaction;
   if (it.type === 1) return Response.json({ type: 1 }); // PING
-  if (it.type !== 2 || !it.data) return reply("Unknown interaction.");
   const why = macroReady();
   if (why) return reply(`The bot isn't set up yet (${why}).`);
+  // tickets: buttons (3), autocomplete (4), forms (5) and the /tickets, /ticket, /tag commands
+  const tk = it as unknown as TicketInteraction;
+  if (it.type === 3) return ticketComponent(tk);
+  if (it.type === 4) return ticketAutocomplete(tk);
+  if (it.type === 5) return ticketModal(tk);
+  if (it.type !== 2 || !it.data) return reply("Unknown interaction.");
+  if (["tickets", "ticket", "tag"].includes(it.data.name)) return ticketCommand(tk);
 
   const user = it.member?.user ?? it.user;
   if (!user) return reply("Couldn't tell who you are.");
@@ -104,6 +113,21 @@ export async function POST(req: Request) {
       return reply(
         `Asked for a screenshot${video ? " and a 5 s video" : ""} from:\n${lines.join("\n")}\n\nIt arrives in a few seconds${video ? " (the video takes ~15 s)" : ""} if the game is running with Discord Alerts on.`,
       );
+    }
+    case "purchases": {
+      if (user.id !== (await ownerId().catch(() => null))) return reply("Only the bot's owner can use this.");
+      const where = String(opt("where") ?? "dm");
+      if (where === "test") {
+        await alertOwner({ title: "💸 Test purchase alert", description: `Purchase alerts go to ${(await getWhere()).mode === "channel" ? "the chosen channel" : "your DMs"}.`, color: COLORS.info }, true);
+        return reply("Sent a test alert.");
+      }
+      if (where === "here") {
+        if (!it.guild_id || !it.channel_id) return reply("Use `where:here` in a server channel.");
+        await setWhere({ mode: "channel", channel: it.channel_id });
+        return reply(`Purchase alerts will be posted in <#${it.channel_id}> and ping you.`);
+      }
+      await setWhere({ mode: where === "off" ? "off" : "dm" });
+      return reply(where === "off" ? "Purchase alerts are off." : "Purchase alerts will come to your DMs.");
     }
     case "test": {
       try {

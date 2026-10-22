@@ -235,11 +235,16 @@ export async function addPaidMonth(userId: string, paymentId: string, amount: nu
   if (!fresh) return false;
   const u = await getUser(userId);
   if (!u) return false;
+  let until = u.expiresAt;
   if (u.expiresAt !== null) {
     const from = Math.max(Date.now(), u.expiresAt ?? 0);
-    await saveUser({ ...u, expiresAt: from + MONTH_MS });
+    until = from + MONTH_MS;
+    await saveUser({ ...u, expiresAt: until });
   }
   await r.lpush(`st:payments:${userId}`, { id: paymentId, amount, currency, at: Date.now() });
+  const { alertOwner, purchaseEmbed } = await import("./ownerAlerts");
+  const who = [u.email, u.discordName && `Discord ${u.discordName}${u.discordId ? ` (<@${u.discordId}>)` : ""}`, u.mc[0]?.name && `MC ${u.mc[0].name}`].filter(Boolean).join(" · ") || userId;
+  await alertOwner(purchaseEmbed({ who, userId, paymentId, amount, currency, until, renewal: (u.expiresAt ?? 0) > 0 }));
   return true;
 }
 

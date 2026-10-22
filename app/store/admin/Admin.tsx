@@ -124,6 +124,7 @@ export default function Admin() {
 
       <div className="st-dash" style={{ marginTop: 16 }}>
         <PaypalOrders reload={load} />
+        <DiscordBot />
         <Releases releases={data.releases} reload={load} />
         <div className="st-card">
           <h2>Developer PCs</h2>
@@ -313,6 +314,36 @@ function Releases({ releases, reload }: { releases: Rel[]; reload: () => void })
         </button>
       </div>
       {msg && <div className="st-msg">{msg}</div>}
+    </div>
+  );
+}
+
+/** The 3310 bot: register its slash commands after they change (tickets, purchase alerts, mod alerts). */
+function DiscordBot() {
+  const [msg, setMsg] = useState("");
+  const [busy, setBusy] = useState(false);
+  async function register() {
+    setBusy(true);
+    setMsg("");
+    try {
+      const r = await post<{ commands: string[] }>("/api/store/admin/discord", {});
+      setMsg(`Registered: ${r.commands.map((c) => "/" + c).join(", ")}. New commands can take a minute to show up in Discord.`);
+    } catch (x) {
+      setMsg((x as Error).message);
+    }
+    setBusy(false);
+  }
+  return (
+    <div className="st-card">
+      <h2>Discord bot</h2>
+      <p className="st-dim st-small">
+        Tickets: <span className="st-mono">/tickets setup</span>, then <span className="st-mono">/tickets panel</span> in your server. Purchase alerts come to your DMs (change with{" "}
+        <span className="st-mono">/purchases</span>, owner only).
+      </p>
+      <button className="st-btn small primary" disabled={busy} onClick={register}>
+        {busy ? "Registering..." : "Register bot commands"}
+      </button>
+      {msg && <p className="st-small">{msg}</p>}
     </div>
   );
 }

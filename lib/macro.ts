@@ -159,7 +159,7 @@ export class DiscordError extends Error {
   }
 }
 
-async function discord(path: string, init: RequestInit): Promise<unknown> {
+export async function discord(path: string, init: RequestInit): Promise<unknown> {
   for (let attempt = 0; attempt < 3; attempt++) {
     const res = await fetch(`${API}${path}`, { ...init, headers: { ...botHeaders(), ...(init.headers as Record<string, string>) } });
     if (res.status === 429) {
@@ -178,7 +178,7 @@ async function discord(path: string, init: RequestInit): Promise<unknown> {
   throw new DiscordError(429, undefined, "Discord rate limit");
 }
 
-async function dmChannel(discordId: string): Promise<string> {
+export async function dmChannel(discordId: string): Promise<string> {
   const r = redis();
   const cached = await r.get<string>(dmKey(discordId));
   if (cached) return cached;

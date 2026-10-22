@@ -1,0 +1,532 @@
+[
+ {
+  "name": "link",
+  "description": "Link a Minecraft account running 3310 Client",
+  "integration_types": [
+   0,
+   1
+  ],
+  "contexts": [
+   0,
+   1,
+   2
+  ],
+  "options": [
+   {
+    "type": 3,
+    "name": "code",
+    "description": "The 6-letter code the mod shows",
+    "required": true,
+    "min_length": 6,
+    "max_length": 6
+   }
+  ]
+ },
+ {
+  "name": "unlink",
+  "description": "Stop alerts from a linked Minecraft account",
+  "integration_types": [
+   0,
+   1
+  ],
+  "contexts": [
+   0,
+   1,
+   2
+  ],
+  "options": [
+   {
+    "type": 3,
+    "name": "account",
+    "description": "Minecraft name, or 'all'",
+    "required": true
+   }
+  ]
+ },
+ {
+  "name": "accounts",
+  "description": "Your linked Minecraft accounts and when they last reported",
+  "integration_types": [
+   0,
+   1
+  ],
+  "contexts": [
+   0,
+   1,
+   2
+  ]
+ },
+ {
+  "name": "alerts",
+  "description": "Where alerts are sent",
+  "integration_types": [
+   0,
+   1
+  ],
+  "contexts": [
+   0,
+   1,
+   2
+  ],
+  "options": [
+   {
+    "type": 3,
+    "name": "where",
+    "description": "Your DMs, or this channel",
+    "required": true,
+    "choices": [
+     {
+      "name": "My DMs",
+      "value": "dm"
+     },
+     {
+      "name": "This channel",
+      "value": "here"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "name": "updates",
+  "description": "Turn the regular status updates on or off",
+  "integration_types": [
+   0,
+   1
+  ],
+  "contexts": [
+   0,
+   1,
+   2
+  ],
+  "options": [
+   {
+    "type": 5,
+    "name": "enabled",
+    "description": "On or off",
+    "required": true
+   }
+  ]
+ },
+ {
+  "name": "test",
+  "description": "Send yourself a test alert",
+  "integration_types": [
+   0,
+   1
+  ],
+  "contexts": [
+   0,
+   1,
+   2
+  ]
+ },
+ {
+  "name": "status",
+  "description": "Screenshot (and optionally a 5 s video) from your game right now",
+  "integration_types": [
+   0,
+   1
+  ],
+  "contexts": [
+   0,
+   1,
+   2
+  ],
+  "options": [
+   {
+    "type": 5,
+    "name": "video",
+    "description": "Also record 5 seconds of video",
+    "required": false
+   },
+   {
+    "type": 3,
+    "name": "account",
+    "description": "Only this Minecraft account (default: all linked)",
+    "required": false
+   }
+  ]
+ },
+ {
+  "name": "tickets",
+  "description": "Set up support tickets for this server",
+  "default_member_permissions": "32",
+  "integration_types": [
+   0
+  ],
+  "contexts": [
+   0
+  ],
+  "options": [
+   {
+    "type": 1,
+    "name": "setup",
+    "description": "Where ticket channels go and who answers them",
+    "options": [
+     {
+      "type": 7,
+      "name": "category",
+      "description": "Category new ticket channels are made in",
+      "required": true,
+      "channel_types": [
+       4
+      ]
+     },
+     {
+      "type": 8,
+      "name": "staff",
+      "description": "Role that sees and answers tickets",
+      "required": true
+     },
+     {
+      "type": 7,
+      "name": "log",
+      "description": "Channel for transcripts and ratings of closed tickets",
+      "required": false,
+      "channel_types": [
+       0
+      ]
+     },
+     {
+      "type": 4,
+      "name": "limit",
+      "description": "Open tickets one member may have (default 1)",
+      "required": false,
+      "min_value": 1,
+      "max_value": 10
+     }
+    ]
+   },
+   {
+    "type": 1,
+    "name": "panel",
+    "description": "Post the 'open a ticket' message in this channel",
+    "options": [
+     {
+      "type": 3,
+      "name": "title",
+      "description": "Title (default: Support)",
+      "required": false,
+      "max_length": 100
+     },
+     {
+      "type": 3,
+      "name": "message",
+      "description": "Text above the buttons",
+      "required": false,
+      "max_length": 1000
+     }
+    ]
+   },
+   {
+    "type": 2,
+    "name": "topic",
+    "description": "The buttons on the panel",
+    "options": [
+     {
+      "type": 1,
+      "name": "add",
+      "description": "Add a topic (a button on the panel)",
+      "options": [
+       {
+        "type": 3,
+        "name": "name",
+        "description": "Button text, e.g. Purchase",
+        "required": true,
+        "max_length": 40
+       },
+       {
+        "type": 3,
+        "name": "emoji",
+        "description": "An emoji for the button",
+        "required": false,
+        "max_length": 40
+       },
+       {
+        "type": 3,
+        "name": "questions",
+        "description": "Form questions, separated by | (add '(optional)' to one that may be left empty)",
+        "required": false,
+        "max_length": 400
+       }
+      ]
+     },
+     {
+      "type": 1,
+      "name": "remove",
+      "description": "Remove a topic",
+      "options": [
+       {
+        "type": 3,
+        "name": "name",
+        "description": "Which topic",
+        "required": true,
+        "autocomplete": true
+       }
+      ]
+     },
+     {
+      "type": 1,
+      "name": "list",
+      "description": "The topics and their questions"
+     }
+    ]
+   },
+   {
+    "type": 1,
+    "name": "autoclose",
+    "description": "Close tickets with no messages for a while (checked once a day)",
+    "options": [
+     {
+      "type": 4,
+      "name": "hours",
+      "description": "Hours without a message (0 = off)",
+      "required": true,
+      "min_value": 0,
+      "max_value": 720
+     }
+    ]
+   },
+   {
+    "type": 1,
+    "name": "blacklist",
+    "description": "Stop someone from opening tickets",
+    "options": [
+     {
+      "type": 6,
+      "name": "user",
+      "description": "Who",
+      "required": true
+     }
+    ]
+   },
+   {
+    "type": 1,
+    "name": "unblacklist",
+    "description": "Let someone open tickets again",
+    "options": [
+     {
+      "type": 6,
+      "name": "user",
+      "description": "Who",
+      "required": true
+     }
+    ]
+   },
+   {
+    "type": 1,
+    "name": "stats",
+    "description": "Ticket numbers and ratings for this server"
+   },
+   {
+    "type": 2,
+    "name": "tag",
+    "description": "Saved replies staff can send with /tag",
+    "options": [
+     {
+      "type": 1,
+      "name": "add",
+      "description": "Save a reply",
+      "options": [
+       {
+        "type": 3,
+        "name": "name",
+        "description": "Short name",
+        "required": true,
+        "max_length": 32
+       },
+       {
+        "type": 3,
+        "name": "content",
+        "description": "The reply",
+        "required": true,
+        "max_length": 2000
+       }
+      ]
+     },
+     {
+      "type": 1,
+      "name": "remove",
+      "description": "Delete a saved reply",
+      "options": [
+       {
+        "type": 3,
+        "name": "name",
+        "description": "Which",
+        "required": true,
+        "autocomplete": true
+       }
+      ]
+     },
+     {
+      "type": 1,
+      "name": "list",
+      "description": "All saved replies"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "name": "ticket",
+  "description": "The ticket you're in",
+  "integration_types": [
+   0
+  ],
+  "contexts": [
+   0
+  ],
+  "options": [
+   {
+    "type": 1,
+    "name": "close",
+    "description": "Close this ticket (a transcript is kept)",
+    "options": [
+     {
+      "type": 3,
+      "name": "reason",
+      "description": "Why (optional)",
+      "required": false,
+      "max_length": 300
+     }
+    ]
+   },
+   {
+    "type": 1,
+    "name": "closerequest",
+    "description": "Ask the member whether this ticket can be closed",
+    "options": [
+     {
+      "type": 3,
+      "name": "reason",
+      "description": "Why (optional)",
+      "required": false,
+      "max_length": 300
+     }
+    ]
+   },
+   {
+    "type": 1,
+    "name": "claim",
+    "description": "Take this ticket"
+   },
+   {
+    "type": 1,
+    "name": "unclaim",
+    "description": "Give this ticket back to the team"
+   },
+   {
+    "type": 1,
+    "name": "transfer",
+    "description": "Hand this ticket to another staff member",
+    "options": [
+     {
+      "type": 6,
+      "name": "user",
+      "description": "Who",
+      "required": true
+     }
+    ]
+   },
+   {
+    "type": 1,
+    "name": "add",
+    "description": "Let a member or role see this ticket",
+    "options": [
+     {
+      "type": 9,
+      "name": "who",
+      "description": "Member or role",
+      "required": true
+     }
+    ]
+   },
+   {
+    "type": 1,
+    "name": "remove",
+    "description": "Take a member or role out of this ticket",
+    "options": [
+     {
+      "type": 9,
+      "name": "who",
+      "description": "Member or role",
+      "required": true
+     }
+    ]
+   },
+   {
+    "type": 1,
+    "name": "rename",
+    "description": "Rename this ticket's channel",
+    "options": [
+     {
+      "type": 3,
+      "name": "name",
+      "description": "New name",
+      "required": true,
+      "max_length": 90
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "name": "tag",
+  "description": "Send a saved reply in this channel (staff)",
+  "integration_types": [
+   0
+  ],
+  "contexts": [
+   0
+  ],
+  "options": [
+   {
+    "type": 3,
+    "name": "name",
+    "description": "Which reply",
+    "required": true,
+    "autocomplete": true
+   }
+  ]
+ },
+ {
+  "name": "purchases",
+  "description": "Owner only: where store purchase alerts go",
+  "integration_types": [
+   0,
+   1
+  ],
+  "contexts": [
+   0,
+   1,
+   2
+  ],
+  "options": [
+   {
+    "type": 3,
+    "name": "where",
+    "description": "DMs, this channel, off, or send a test",
+    "required": true,
+    "choices": [
+     {
+      "name": "My DMs",
+      "value": "dm"
+     },
+     {
+      "name": "This channel",
+      "value": "here"
+     },
+     {
+      "name": "Off",
+      "value": "off"
+     },
+     {
+      "name": "Send a test",
+      "value": "test"
+     }
+    ]
+   }
+  ]
+ }
+]
