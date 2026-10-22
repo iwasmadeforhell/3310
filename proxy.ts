@@ -6,13 +6,15 @@
 //   drop.3310.nz       -> app/drop/*
 //   forum.3310.nz      -> app/old/*   (old.3310.nz redirects here)
 //
+// While SUBDOMAINS_ARCHIVED is on (lib/hosts.ts), every subdomain above redirects to 3310.nz instead.
+//
 // The auth redirects here are only for convenience. Every protected page and
 // API route re-checks the signed cookie on the server itself, so nothing is
 // exposed even if this file were bypassed.
 
 import { NextResponse, type NextRequest } from "next/server";
 import { COOKIE, verifyToken } from "./lib/session";
-import { FOLDER, MOVED, SECTIONS, isArchiveHost, movedSectionForHost, sectionForHost } from "./lib/hosts";
+import { ARCHIVED_APIS, FOLDER, MOVED, SECTIONS, SUBDOMAINS_ARCHIVED, isArchiveHost, movedSectionForHost, sectionForHost } from "./lib/hosts";
 
 const ROOT = process.env.ROOT_DOMAIN ?? "3310.nz";
 
@@ -27,6 +29,12 @@ export async function proxy(req: NextRequest) {
     path.startsWith("/api/") ||
     path.startsWith("/_next/") ||
     /\.[a-z0-9]{2,5}$/i.test(path);
+
+  // ---------- archived: only 3310.nz is live ----------
+  if (SUBDOMAINS_ARCHIVED) {
+    if (host.split(":")[0].toLowerCase().endsWith(`.${ROOT}`)) return NextResponse.redirect(new URL(`https://${ROOT}/`), 307);
+    if (ARCHIVED_APIS.some((p) => path.startsWith(p))) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
 
   // ---------- moved subdomains (old.3310.nz -> forum.3310.nz) ----------
   const moved = movedSectionForHost(host);

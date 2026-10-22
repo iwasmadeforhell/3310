@@ -16,7 +16,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
       payments={await payments(u.id)}
       releases={releases.map((r) => ({ channel: r.channel, version: r.version, name: r.name, size: r.size, uploadedAt: r.uploadedAt }))}
       cooldownMs={HWID_COOLDOWN_MS}
-      paid={!!sp.paid}
+      paid={sp.paid ?? ""}
     />
   );
 }

@@ -1,5 +1,6 @@
 import { MC_SLOTS, PRICE_CENTS, currentUser, isActive, isStaffTier } from "@/lib/store";
 import BuyButton from "./BuyButton";
+import PaypalButton from "./PaypalButton";
 
 export const metadata = { title: "Purchase" };
 
@@ -25,7 +26,13 @@ export default async function Purchase({ searchParams }: { searchParams: Promise
           <li>Updates while your month runs</li>
         </ul>
         {u ? (
-          <BuyButton label={running ? `Add another month (€${price})` : `Buy one month (€${price})`} />
+          <>
+            {/* Card payments (Stripe) are paused: the checkout route refuses them, the webhook still credits late ones. */}
+            <BuyButton label={`${running ? "Add another month" : "Buy one month"} with crypto (€${price})`} endpoint="/api/store/crypto/checkout" />
+            <div style={{ marginTop: 8 }}>
+              <PaypalButton price={price} />
+            </div>
+          </>
         ) : (
           <a className="st-btn primary wide" href="/login?next=/purchase">
             Log in to buy
@@ -38,7 +45,7 @@ export default async function Purchase({ searchParams }: { searchParams: Promise
         )}
       </div>
       <p className="st-dim st-small" style={{ marginTop: 16, textAlign: "center" }}>
-        Payments are handled by Stripe. 3310 Client is a third-party mod; using macros may break the rules of the server you play on.
+        Crypto payments are handled by NOWPayments. PayPal payments are checked by hand. 3310 Client is a third-party mod; using macros may break the rules of the server you play on.
       </p>
     </div>
   );

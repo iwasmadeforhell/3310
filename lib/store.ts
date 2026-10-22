@@ -38,7 +38,7 @@ export type StoreUser = {
 export const MONTH_MS = 30 * 24 * 3600 * 1000;
 export const HWID_COOLDOWN_MS = 24 * 3600 * 1000;
 export const MC_SLOTS = 3;
-export const PRICE_CENTS = 399;
+export const PRICE_CENTS = 299;
 
 const userKey = (id: string) => `st:user:${id}`;
 const emailKey = (email: string) => `st:email:${email}`;

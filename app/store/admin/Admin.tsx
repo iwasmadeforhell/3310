@@ -123,6 +123,7 @@ export default function Admin() {
       </div>
 
       <div className="st-dash" style={{ marginTop: 16 }}>
+        <PaypalOrders reload={load} />
         <Releases releases={data.releases} reload={load} />
         <div className="st-card">
           <h2>Developer PCs</h2>
@@ -312,6 +313,61 @@ function Releases({ releases, reload }: { releases: Rel[]; reload: () => void })
         </button>
       </div>
       {msg && <div className="st-msg">{msg}</div>}
+    </div>
+  );
+}
+
+type PaypalOrder = { code: string; userId: string; who: string; at: number };
+
+/** Open PayPal.me orders: match the code in the PayPal note, then confirm to add the month. */
+function PaypalOrders({ reload }: { reload: () => void }) {
+  const [orders, setOrders] = useState<PaypalOrder[] | null>(null);
+  const [err, setErr] = useState("");
+  useEffect(() => {
+    fetch("/api/store/admin/paypal")
+      .then((r) => r.json())
+      .then((j) => (j.error ? setErr(j.error) : setOrders(j.orders)))
+      .catch((x) => setErr((x as Error).message));
+  }, []);
+
+  async function resolve(code: string, action: "confirm" | "dismiss") {
+    if (action === "confirm" && !confirm(`Add one month for ${code}? Only do this once the payment is in your PayPal.`)) return;
+    setErr("");
+    try {
+      setOrders((await post<{ orders: PaypalOrder[] }>("/api/store/admin/paypal", { code, action })).orders);
+      if (action === "confirm") reload();
+    } catch (x) {
+      setErr((x as Error).message);
+    }
+  }
+
+  return (
+    <div className="st-card">
+      <h2>PayPal orders</h2>
+      <p className="st-dim st-small">Buyers put their code in the PayPal note. Confirm once the money is in your PayPal; dismiss stale ones.</p>
+      {err && <div className="st-msg err">{err}</div>}
+      {orders === null ? (
+        <p className="st-dim">Loading...</p>
+      ) : orders.length === 0 ? (
+        <p className="st-dim st-small">No open orders.</p>
+      ) : (
+        orders.map((o) => (
+          <div className="st-row" key={o.code}>
+            <span className="st-mono">{o.code}</span>
+            <span className="st-dim">
+              {o.who} · {fmtDate(o.at)}
+            </span>
+            <span>
+              <button className="st-btn small primary" onClick={() => resolve(o.code, "confirm")}>
+                Confirm
+              </button>{" "}
+              <button className="st-btn small" onClick={() => resolve(o.code, "dismiss")}>
+                Dismiss
+              </button>
+            </span>
+          </div>
+        ))
+      )}
     </div>
   );
 }

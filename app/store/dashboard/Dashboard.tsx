@@ -13,7 +13,7 @@ function TierPill({ tier }: { tier: string }) {
   return <span className={`st-pill ${tierClass(tier)}`}>{tier}</span>;
 }
 
-export default function Dashboard(props: { initial: PublicUser; payments: Payment[]; releases: Rel[]; cooldownMs: number; paid: boolean }) {
+export default function Dashboard(props: { initial: PublicUser; payments: Payment[]; releases: Rel[]; cooldownMs: number; paid: string }) {
   const [u, setU] = useState(props.initial);
   const [err, setErr] = useState("");
   const [pw, setPw] = useState({ email: "", current: "", password: "" });
@@ -51,7 +51,11 @@ export default function Dashboard(props: { initial: PublicUser; payments: Paymen
           Log out
         </button>
       </div>
-      {props.paid && <div className="st-msg ok">Thanks! Your month is added as soon as Stripe confirms the payment (usually a few seconds; refresh if needed).</div>}
+      {props.paid === "crypto" ? (
+        <div className="st-msg ok">Thanks! Your month is added once the payment is confirmed on the blockchain (usually 5-30 minutes depending on the coin; refresh to check).</div>
+      ) : (
+        props.paid && <div className="st-msg ok">Thanks! Your month is added as soon as Stripe confirms the payment (usually a few seconds; refresh if needed).</div>
+      )}
       {u.banned && <div className="st-msg err">This account is banned.</div>}
       {err && <div className="st-msg err">{err}</div>}
 

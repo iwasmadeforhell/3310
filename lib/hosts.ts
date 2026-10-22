@@ -27,3 +27,12 @@ export function isArchiveHost(host: string | null): boolean {
 export function movedSectionForHost(host: string | null): Section | null {
   return MOVED[subdomain(host) ?? ""] ?? null;
 }
+
+/**
+ * Archived (2026-10-22): only 3310.nz (the store) is live. Every *.3310.nz subdomain redirects to 3310.nz and the
+ * section APIs answer 404. The section code stays in the repo; set this to false to bring them back.
+ */
+export const SUBDOMAINS_ARCHIVED = true;
+
+/** API routes that only the archived sections use. /api/drop/cleanup stays on so the daily cron still clears old files. */
+export const ARCHIVED_APIS = ["/api/old/", "/api/portfolio/", "/api/drop/files", "/api/drop/links", "/api/drop/upload", "/api/auth/"];
